@@ -272,7 +272,7 @@ to do all of our work in a Python scripts that we will save.
 
 Within the tutorial directory, let's create a file with the following contents, naming the file `draw.py`. Make sure to save it in your tutorial directory.
 
-    #!/bin/env python
+    #!/usr/bin/env python
     
     from graphics import *
     
@@ -314,7 +314,7 @@ in an orderly fashion. Such habits will pay off when building more complex progr
 Now run the script again, after saving your changes to the file. This time the window should stay on screen. When you click
 inside the window, you'll see that the program exits.
 
-> _What does `#!/bin/env python` mean?_
+> _What does `#!/usr/bin/env python` mean?_
 >
 > This is what is referred to as the "[shebang](https://en.wikipedia.org/wiki/Shebang_(Unix))". It tells the program loader
 > what program to execute when you invoke this script directly. Up until now you've been invoking the `python` program
@@ -327,10 +327,10 @@ inside the window, you'll see that the program exits.
 >
 > As to the shebang, we can break it down. The `#` is just a comment in python. However, when followed by an exclamation
 > mark (`#!`) on the first line, it has special meaning indicating that it is a shebang. Everything after the exclamation
-> mark is a path to an executable and subsequent arguments. So the executable we are invoking is actually `/bin/env`. `env`
+> mark is a path to an executable and subsequent arguments. So the executable we are invoking is actually `/usr/bin/env`. `env`
 > is used to set environment variables and execute programs. Typing `env python` will run python wherever it happens to
 > be installed. Since the shebang needs a fully qualified path (that is, a path starting from the root of your file system
-> to the file), it must match exactly. Since `python` could be installed anywhere, we can't simply have `#!/bin/python`. It
+> to the file), it must match exactly. Since `python` could be installed anywhere, we can't simply have `#!/usr/bin/python`. It
 > might actually be in `/usr/bin/python`, `/usr/local/bin/python`, or any number of locations. `env`, on the other hand, is guaranteed to always be in `/bin` because it is a standard part of systems. Python is a relative newcomer to the computing field. To find out where your `python` executable located
 > you can use `which`, like this: `which python`. Let's say that it returned `/usr/bin/python`. You can list that directory
 > with `ls` like so: `ls /usr/bin`. You will see that there are a _lot_ of binaries there. The `$PATH` environment variable
@@ -345,7 +345,7 @@ inside the window, you'll see that the program exits.
 Let's play around with some of our new tools. Create a new Python script filed in your tutorial directory called `moire.py`
 with the following contents:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -368,7 +368,7 @@ pass creates the same number of lines but with their one of their x coordinates 
 is what is called the _[moiré pattern](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern)_. You can also create moiré
 patterns with other regular shapes, like circles:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -388,7 +388,7 @@ some `print` statements to help see what's going on. Since the output can go by 
 to ask it to pause. First, we're going to import an additional module named `time`. Near the line that imports `graphics`
 we'll add a line to `import time`. Then we'll add some `print` and `time.sleep()` calls to help us out.
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
     import time                 # Added import
@@ -456,7 +456,7 @@ Python.
 
 Using our original moiré program, we'll identify a few ways to clean it up. First let's look at the original code. Place this code in a file called `refactor.py` in your tutorial directory.
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -498,7 +498,7 @@ One thing notable about our program is that it relies exclusively on global vari
 are assigned at the top level of a script. We're going to wrap all our code in functions so that we can encapsulate or hide
 our variables and limit their life time to controlled scopes. Let's do that now, in two phases, and we'll walk through the reasoning. First, let's move everything into a function called main.
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -561,7 +561,7 @@ makes it easier to use your code interactively - your not limited to running all
 
 Now, let's pull out our line drawing code from the main routine. This 
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -641,7 +641,7 @@ Try this and verify it still works.
 
 Your complete code should now look like this:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -716,7 +716,7 @@ We modify our function so that it is now parameterized by `width` and `height`:
 
 The last step is to modify the invocation of `moire_lines` in `main` to pass the width and height. The result should look like this:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     from graphics import *
 
@@ -854,7 +854,7 @@ That's easy enough. Quite a lot of reasoning for so little code. Let's start to 
     
 In this new `turtle` directory, create a file called `turtle.py` with the following contents.
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     import math
 
@@ -982,7 +982,7 @@ Save this in `turtle.py` and confirm that it still works interactively:
 
 We're getting close. A few more things, and we'll be ready to draw. The next steps are in the exercises, but we'll provide the solution in the next section. At this point, your `turtle.py` should look close to the following:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     import math
 
@@ -1106,7 +1106,7 @@ After 250 revolutions (1000 / 4), we have arrived back out our starting angle, b
 
 So far, so good. Let's look at our code listing now. With all the additions, it's getting longer.
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     import math
 
@@ -1145,7 +1145,7 @@ So far, so good. Let's look at our code listing now. With all the additions, it'
 
 This has all been terribly boring. Let's draw something finally. Let's create a new file in the turtle subdirectory where we have `turtle.py`. Call this new file `draw.py` and fill it with the following contents:
 
-    #!/bin/env python
+    #!/usr/bin/env python
 
     import turtle
     from graphics import *
