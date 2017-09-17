@@ -38,7 +38,7 @@ will enable us to start getting interesting results sooner, but also familiarize
 
 * 1&nbsp;&nbsp;&nbsp;[Project Directory](#dir)
 * 2&nbsp;&nbsp;&nbsp;[How to Draw Things](#draw)
-	* 2.1&nbsp;&nbsp;&nbsp;[Installing graphics.py (and Learning Some Shell)](#install)
+	* 2.1&nbsp;&nbsp;&nbsp;[Installing `graphics.py` (and Learning Some Shell)](#install)
 	* 2.2&nbsp;&nbsp;&nbsp;[Getting a Small Taste of Drawing](#taste)
 * 3&nbsp;&nbsp;&nbsp;[Writing Scripts](#scripts)
 	* 3.1&nbsp;&nbsp;&nbsp;[A Simple Program](#simple)
@@ -60,7 +60,7 @@ will enable us to start getting interesting results sooner, but also familiarize
 		* 5.4.1&nbsp;&nbsp;&nbsp;[Classes](#classdef)
 		* 5.4.2&nbsp;&nbsp;&nbsp;[Constructors](#construct)
 		* 5.4.3&nbsp;&nbsp;&nbsp;[Instance Variables](#ivars)
-		* 5.4.4&nbsp;&nbsp;&nbsp;[Instance Variables]()
+		* 5.4.4&nbsp;&nbsp;&nbsp;[Instance Variables](#xyz)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -670,7 +670,7 @@ Your complete code should now look like this:
 **Python Exercises:**
 * `draw_line` is nice because it hides all the `Point` and `Line` stuff from `graphics.py`, giving us a much simpler interface. It is a very short function, with only two lines of code. However, we can reduce it to only one line of code and eliminate the `line` variable altogether. Can you see how?
 
-### <a name="concepts"</a>4.4&nbsp;&nbsp;&nbsp;Concepts and Best Practices
+### <a name="concepts"></a>4.4&nbsp;&nbsp;&nbsp;Concepts and Best Practices
 
 Refactoring is the art of abstraction, and that can be pretty... abstract. So it's okay if its difficult to understand why we did all that work to refactor our code. A lot of the benefits of abstraction and refactoring will become clearer when you have more experience building larger projects. As things become more complicated and unweildy, these tools will help you manage the complexity. This section describes some philosophical aspects to writing code and refactoring. You can skim this section, but it is definitely worth visiting some of the links in the future.
 
@@ -1285,4 +1285,4 @@ We an see that both have an "attribute" called `number`. An attribute is often a
 >
 > [Simula](https://en.wikipedia.org/wiki/Simula) introduced the concept of objects and classes in 1962. When other languages came along, they introduce new concepts, or existing concepts were reinvented. Formal methodologies for design and architecture also came along, sometimes inventing new terms. The unfortunate situation is that we now use two or more terms interchangeably for the same things. Further complicating matters is that some terms are more correct when discussing certain languages over others.
 
-#### <a name="xyz></a>5.6.1&nbsp;&nbsp;&nbsp;Instance Variables
+#### <a name="xyz"></a>5.4.4&nbsp;&nbsp;&nbsp;Instance Variables
