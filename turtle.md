@@ -311,8 +311,12 @@ window with it. We're going to add the following code to the end of the script n
 The last line to invoke `close()` method is not strictly necessary, but it is good housekeeping to clean up after ourselves
 in an orderly fashion. Such habits will pay off when building more complex programs.
 
-Now run the script again, after saving your changes to the file. This time the window should stay on screen. When you click
-inside the window, you'll see that the program exits.
+
+Now run the script again, after saving your changes to the file. You should see a window that matches the following:
+
+![alt text](images/draw.png "draw.py")
+
+This time the window should stay on screen. When you click inside the window, you'll see that the program exits.
 
 > _What does `#!/usr/bin/env python` mean?_
 >
