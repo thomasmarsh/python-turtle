@@ -629,7 +629,7 @@ makes it easier to use your code interactively - your not limited to running all
 
 ### <a name="func"></a>4.3&nbsp;&nbsp;&nbsp;Functional Decomposition
 
-Now, let's pull out our line drawing code from the main routine. This 
+Now, let's pull out our line drawing code from the main routine.
 
 ```python
 #!/usr/bin/env python
@@ -686,7 +686,9 @@ def moire_lines(blarney):
         line.draw(blarney)
 ```
 
-Deleting the second `for` loop line was all it took. The body of the second loop was already at the right indentation level. Convenient. But this code looks a little funny. We're assigning and reassigning the `line` variable within the loop. In fact, this is some common code that can be refactored. Let's define our own line function. Before we fill it in, let's decide how we'd like to use it.
+Deleting the second `for` loop line was all it took since it was identical to the first. The body of the second loop was already at the right indentation level. Convenient. Now instead of drawing the lines in two passes, there will be only one pass during which we draw two lines at a time.
+
+But this code looks a little funny. We're assigning and reassigning the `line` variable within the loop. In fact, this is some common code that can be refactored. Let's define our own line function. Before we fill it in, let's decide how we'd like to use it.
 
 We're really like to say, as close as possible to the English, is "draw a line from A to B" without having to write all that `Point` and `Line` stuff over and over again. So, this is our ideal `moire_lines`
 
@@ -857,7 +859,9 @@ We now have almost all the tools we need to do some [turtle graphics](https://en
 
 ### <a name="state"></a>5.1&nbsp;&nbsp;&nbsp;Turtle State
 
-The current state of the turtle is comprised of its x and y coordinates and its angle (the direction it is facing). Let's say the turtle is currently at position (50, 50), and is facing right. We say that right is to the right hand side of the screen, and it is the direction where `x` is increasing. If 0˚ is straight up, then 90˚ is the angle pointing to the right. So, our state can be described as the `[(50, 50), 90]`. That is a list, where the first element is a tuple of the coordinate position, and the second element is the angle in degrees.
+The current state of the turtle is comprised of its x and y coordinates and its angle (the direction it is facing). Let's say the turtle is currently at position (50, 50), and is facing right. We say that right is to the right hand side of the screen, and it is the direction where `x` is increasing. We say that 0˚ is the angle pointing to the right. So, our state can be described as the `[(50, 50), 0]`. That is a list, where the first element is a tuple of the coordinate position, and the second element is the angle in degrees.
+
+In trigonometry, the the angle measures increase going counterclockwise, with 0˚ being the rightmost point of the circle, 90˚ being the top, 180˚ the left, and 270˚ the bottom.
 
 One important thing to note is that in computing we always refer to angles in radians, where 2π rad = 360˚. It's still useful to think in degrees, so let's define a function we'll use called `deg2rad`. We can see that to convert from an angle in degrees to an angle in radians, we just divide by 180 and multiply times π.
 
@@ -874,7 +878,7 @@ def deg2rad(n):
 
 Note that we rely on the value of π which is a constant stored in the math module. So, we have to import `math` before we can reference `math.pi`.
 
-Using our list format, now our initial state can be described as `[(50, 50), deg2rad(90)]`.
+Using our list format, now our initial state can be described as `[(50, 50), deg2rad(0)]`.
 
 > _Why a list with two elements? Why not a tuple of three elements, or some other arrangement?_
 >
@@ -891,30 +895,27 @@ Using our list format, now our initial state can be described as `[(50, 50), deg
 
 Moving the turtle forward requires a trigonometric review. Given an angle, we want to know how to move the turtle one unit in that direction from it's current point. Consider the [unit circle](https://en.wikipedia.org/wiki/Unit_circle), which is just a circle with radius 1 centered at (0,0). If (x,y) is a coordinate on the circle's perimeter, and θ (theta) is an angle, then cos(θ) = x and sin(θ) = y.
 
-In our world, the unit of measures is pixels, so moving in one unit means moving one pixel. Let's try some interactive math in Python to validate our understanding with a θ value of 0π (0˚, or "up").
+In our world, the unit of measures is pixels, so moving in one unit means moving one pixel. Let's try some interactive math in Python to validate our understanding with a θ value of 0π (0˚, or "right").
 
 ```python
 >>> import math
 >>> theta = 0
->>> (math.sin(theta), math.cos(theta))
-(0.0, 1.0)
+>>> (math.cos(theta), math.sin(theta))
+(1.0, 0.0)
 ```
 
-This tuple result represents the amount we would have to move in the x and y coordinate space. Specifically, we would add `0` to our x position and add `1` to our y position. However, we should notice something: in all the drawing we've done, adding to y moves us _down_. That's because our coordinate system on our screen is flipped from trigonometric norms. This is imporant to keep in mind. We'll have to negate the value of the y component to get our intended result on screen.
+This tuple result represents the amount we would have to move in the x and y coordinate space. Specifically, we would add `1` to our x position and add `0` to our y position.
 
-> _Why is the (0,0) origin of the window in the top left of the window, and the y-axis inverted?_
->
-> This is a historical quirk of computing. In the early days of displays, the cathode ray tube (CRT) would start in the upper left hand of the screen. This established the convention that (0,0) was at the top left. Because the cathode ray proceeded from top-to-bottom, it was conventional that y value was considered to be increasing.
-
-Let's try a few more values, this time for π/2 (90˚, or "right"), which should move us one unit to the right.
+Let's try moving up. In this case our theta is π/2 which is the same as 90˚.
 
 ```python
+>>> import math
 >>> theta = math.pi / 2
->>> math.sin(theta), math.cos(theta)
-(1.0, 6.123233995736766e-17)
+>>> (math.cos(theta), math.sin(theta))
+(6.123233995736766e-17, 1.0)
 ```
 
-Yikes! What's that all about. We expected `(1.0, 0)`. Well, if we look at that number `6.123233995736766e-17`, we can see that it is an exponentiated value because of the `e-17` in the end. That `e` means we should multiply the preceding `6.123233995736766` by 10<sup>-17</sup>. That's a tiny number, and very close to zero, at least as far as we are concerned for our problem.
+Yikes! What's that all about? We expected a zero as the first number. Well, if we look at that number `6.123233995736766e-17`, we can see that it is an exponentiated value because of the `e-17` in the end. That `e` means we should multiply the preceding `6.123233995736766` by 10<sup>-17</sup>. That's a tiny number, and very close to zero, at least as far as we are concerned for our problem.
 
 > _Why do we have these small values instead of exactly zero?_
 >
@@ -924,29 +925,37 @@ Yikes! What's that all about. We expected `(1.0, 0)`. Well, if we look at that n
 >
 > If you want more information, I highly recommend the amazing and detailed discussion of these issues in [What Every Computer Scientist Should Know About Floating-Point Arithmetic](http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
 
-Let's finish off, looking at π (180˚, or "down") and 3*π/2 (270˚ or left).
+There's one more thing to notice: in all the drawing we've done, adding to y moves us _down_. We wanted `(0, -1)`, not `(0, 1)`. This difference is because our coordinate system on our screen is flipped from trigonometric norms. This is imporant to keep in mind. We'll have to negate the value of the y component to get our intended result on screen. So, when using `cos` and `sin` to compute our trajectory, we will have to always remember to take the negative of the `sin` result.
+
+> _Why is the (0,0) origin of the window in the top left of the window, and the y-axis inverted?_
+>
+> This is a historical quirk of computing. In the early days of displays, the cathode ray tube (CRT) would start in the upper left hand of the screen. This established the convention that (0,0) was at the top left. Because the cathode ray proceeded from top-to-bottom, it was conventional that y value was considered to be increasing.
+
+Let's try a few more values, this time for π/2 (90˚, or "right"), which should move us one unit to the right.
+
+Let's finish off, looking at π (180˚, or "left") and 3*π/2 (270˚ or down).
 
 ```python
 >>> theta = math.pi
->>> (math.sin(theta), math.cos(theta))
-(1.2246467991473532e-16, -1.0)
+>>> (math.cos(theta), math.sin(theta))
+(-1.0, 1.2246467991473532e-16)
 ```
 
-Okay, we can see we have a gross exponent again, this time in the x coordinate. So we read this as (0, -1). Of course, because of the y-axis inversion, we'll need to negate the y coordinate so our result should be (0, 1) for down.
+Okay, we can see we have a gross exponent again, this time in the y coordinate. So we read this as `(-1, 0)`. 
 
 ```python
 >>> theta = 3*math.pi/2
->>> (math.sin(theta), math.cos(theta))
-(-1.0, -1.8369701987210297e-16)
+>>> (math.cos(theta), math.sin(theta))
+(-1.8369701987210297e-16, -1.0)
 ```
 
-In this case, we have (-1, 0), which is correct for moving left on the screen.
+In this case we consider this as `(0, -1)`, again ignoring the tiny fractional. Because of the y-axis inversion, we'll need to negate the y coordinate so our result should be `(0, 1)` for down.
 
-Now we are ready to define a function which takes and angle and gives us back the amount we should shift, our our "delta". We know that it is simply the `sin` of the angle for the x coordinate, and `-cos` of the angle for y (negated for the inverted axis).
+Now we are ready to define a function which takes and angle and gives us back the amount we should shift, our our "delta". We know that it is simply the `cos` of the angle for the x coordinate, and `-sin` of the angle for y (negated for the inverted axis).
 
 ```python
 def delta(theta):
-    return (math.sin(theta), -math.cos(theta))
+    return (math.cos(theta), -math.sin(theta))
 ```
 
 That's easy enough. Quite a lot of reasoning for so little code. Let's start to put this together. In your tutorial directory, make a new subdirectory called `turtle`. For simplicity, let's copy the `graphics.py` module there too.
@@ -969,11 +978,11 @@ def deg2rad(n):
     return math.pi * n / 180.0
 
 def delta(theta):
-    return (math.sin(theta), -math.cos(theta))
+    return (math.cos(theta), -math.sin(theta))
 
 def main():
     # Just print out a test value for now
-    theta = deg2rad(90)
+    theta = deg2rad(0)
     print delta(theta)
 
 if __name__ == '__main__': main()
@@ -983,11 +992,11 @@ We now have the scaffolding on which we will move to the next steps.
 
 #### <a name="step"></a>5.2.2&nbsp;&nbsp;&nbsp;One Step Forward
 
-Let's remind ourselves of how were defining our state. We're using a list with a tuple for the coordinates as the first element and then the angle in radians as the second element. Our state might look like this: `[(50, 50), deg2rad(90)]`. What we want is a function which takes this state, and return something along the lines of `[(51, 50), deg2rad(90)]`. This would mean our turtle has moved right one pixel and still has the same angle. Let's define our initial state in `turtle.py`.
+Let's remind ourselves of how were defining our state. We're using a list with a tuple for the coordinates as the first element and then the angle in radians as the second element. Our state might look like this: `[(50, 50), deg2rad(0)]`. What we want is a function which takes this state, and return something along the lines of `[(51, 50), deg2rad(0)]`. This would mean our turtle has moved right one pixel and still has the same angle. Let's define our initial state in `turtle.py`.
 
 ```python
 def initial_state():
-    return [(50, 50), deg2rad(90)]
+    return [(50, 50), deg2rad(0)]
 ```
 
 Now, within the the same directory as your `turtle.py` do the following:
@@ -995,7 +1004,7 @@ Now, within the the same directory as your `turtle.py` do the following:
 ```python
 >>> import turtle
 >>> turtle.initial_state()
-[(50, 50), 1.5707963267948966]
+[(50, 50), 0.0]
 ```
 
 If you get this error:
@@ -1021,13 +1030,13 @@ The response shows that we are at position (50, 50) with an angle of 1.5707..., 
 This is pretty ugly, though. Just like we can create two variables `a` and `b` by assigning from a tuple like this: `(a, b) = (1, 2)`, we can also use this destructuring trick with our list.
 
 ```python
->>> [(x, y), angle] = [(50, 50), 1.5707]
+>>> [(x, y), angle] = [(50, 50), 0]
 >>> print x
 50
 >>> print y
 50
 >>> print angle
-1.5707
+0
 ```
 
 Let's break it down and see how this works. Destructured assignment between lists works just like with the tuple example.
@@ -1093,9 +1102,9 @@ Perfect we've moved one step to the right. So, our new state is the combination 
 ```python
 >>> new_state = [(x+dx, y+dy), angle]
 >>> state
-[(50, 50), 1.5707963267948966]
+[(50, 50), 0.0]
 >>> new_state
-[(51.0, 50.0), 1.5707963267948966]
+[(51.0, 50.0), 0.0]
 ```
 
 Along the way, our position has also turned form integer to floating point, which is fine. We'll be getting fractional values as we change to other angles. Let's wrap this logic into a new function called `forward`:
@@ -1113,9 +1122,9 @@ Save this in `turtle.py` and confirm that it still works interactively:
 >>> import turtle
 >>> state = turtle.initial_state()
 >>> state
-[(50, 50), 1.5707963267948966]
+[(50, 50), 0.0]
 >>> turtle.forward(state)
-[(51.0, 50.0), 1.5707963267948966]
+[(51.0, 50.0), 0.0]
 ```
 
 We're getting close. A few more things, and we'll be ready to draw. The next steps are in the exercises, but we'll provide the solution in the next section. At this point, your `turtle.py` should look close to the following:
@@ -1129,7 +1138,7 @@ def deg2rad(n):
     return math.pi * n / 180.0
 
 def delta(theta):
-    return (math.sin(theta), -math.cos(theta))
+    return (math.cos(theta), -math.sin(theta))
 
 def forward(state):
     [(x, y), angle] = state
@@ -1137,7 +1146,7 @@ def forward(state):
     return [(x+dx, y+dy), angle]
 
 def initial_state():
-    return [(50, 50), deg2rad(90)]
+    return [(50, 50), deg2rad(0)]
 
 def main():
     # Try out our new code
@@ -1153,8 +1162,8 @@ Running the above script produces this output.
 
 ```
 $ python ./turtle.py
-[(50, 50), 1.5707963267948966]
-[(51.0, 50.0), 1.5707963267948966]
+[(50, 50), 0.0]
+[(51.0, 50.0), 0.0]
 ```
 
 **Python exercises:**
@@ -1163,14 +1172,14 @@ $ python ./turtle.py
 
 #### <a name="turn"></a>5.2.3&nbsp;&nbsp;&nbsp;Turning
 
-Compared to moving forward, turning is going to be really easy. What we want is to take our state representation and an angle, and return a new state with the updated angle. For example, if we're facing 180˚ (down) and we want to turn to the right 90˚ then we just add 90˚ to our 180˚ and we'll be facing 270˚ (left). Of course, we do this in radians, and we need to do all the busy work of extracting and updating our state. But other than that, it's just a simple addition. If you haven't already managed to work it out on your own, perhaps give it a try now based on our previous example of how we implemented `forward`. This time, our function to turn right will look like this:
+Compared to moving forward, turning is going to be really easy. What we want is to take our state representation and an angle, and return a new state with the updated angle. For example, if we're facing 180˚ (left) and we want to turn 90˚ then we just add 90˚ to our 180˚ and we'll be facing 270˚ (down). Of course, we do this in radians. We also need to do all the busy work of extracting and updating our state. Other than that, though, it's just a simple addition. If you haven't already managed to work it out on your own, perhaps give it a try now based on our previous example of how we implemented `forward`. This time, our function to turn right will look like this:
 
 ```python
 # `state` is a list containing a two-tuple for the coordinates as the first
 # element and the current angle as the second element.
 #
 # `amount` is the angle in radians to adjust our current angle.
-def turn_right(state, amount):
+def turn_left(state, amount):
     # 1. get the current position and angle from state
 
     # 2. return a new state adding amount to the angle
@@ -1179,96 +1188,84 @@ def turn_right(state, amount):
 Let's look at the solution.
 
 ```python
-def turn_right(state, amount):
+def turn_left(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 ```
 
 The only interesting thing here that is really different is that we opted not to destructure the position coordinate into a tuple of `(x, y)` variables. If you were to inspect `position`, you would see that this is still a tuple holding the x and y coordinates.
 
-Turning left is the same as turning right, only this case we subtract the angle amount. Our implementation of `turn_left` looks very similar to `turn_right`.
+Turning right is the same as turning left, only this case we subtract the angle amount. Our implementation of `turn_right` looks very similar to `turn_left`.
 
 ```python
-def turn_left(state, amount):
+def turn_right(state, amount):
     [position, angle] = state
     return [position, angle - amount]
 ```
 
-The only difference is that we subtract the changed angle amount. There is a chance to refactor this. We can rewrite `turn_left` to call `turn_right` with a negative amount.
+The only difference is that we subtract the changed angle amount. There is a chance to refactor this. We can rewrite `turn_right` to call `turn_left` with a negative amount.
 
 ```python
-def turn_left(state, amount):
-    return turn_right(state, -amount)
+def turn_right(state, amount):
+    return turn_left(state, -amount)
 ```
 
-Can you see why this is equivalent? Admittedly, it can be a bit confusing to see `turn_left` call `turn_right` internally. If we wanted to be semantically clear, we could rewrite this into three functions, adding a generic `turn` function which takes the amount.
+Can you see why this is equivalent? Admittedly, it can be a bit confusing to see `turn_right` call `turn_left` internally. If we wanted to be semantically clear, we could rewrite this into three functions, adding a generic `turn` function which takes the amount.
 
 ```python
 def turn(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 
-turn_right = turn
+turn_left = turn
 
-def turn_left(state, amount):
+def turn_right(state, amount):
     return turn(state, -amount)
 ```
 
-This is the version we'll use. Since `turn_right` and `turn` are the same, we can simply create turn_right as a variable assignment. It's still a function that can be called. Let's try these out interactively.
+This is the version we'll use. Since `turn_left` and `turn` are the same, we can simply create `turn_left` as a variable assignment. It's still a function that can be called. Let's try these out interactively.
 
 ```python
 >>> import turtle
 >>> state = turtle.initial_state()
 >>> state
-[(50, 50), 1.5707963267948966]
+[(50, 50), 0.0]
 ```
     
-We are facing right (π/2, or 90˚). Let's see where we would be if we turned right an additional 90˚.
-
-```python
->>> turtle.turn_right(state, turtle.deg2rad(90))
-[(50, 50), 3.141592653589793]
-```
-    
-We got π, which is 180˚, so we are facing down now. Now let's look were we would be if we turned left. (Note we still haven't modified state, so we are looking at where we would be if we turned left 90˚ from our original starting angle facing to the right.)
+We are facing right (0π, or 0˚). Let's see where we would be if we turned left an additional 90˚.
 
 ```python
 >>> turtle.turn_left(state, turtle.deg2rad(90))
-[(50, 50), 0.0]
+[(50, 50), 1.5707963267948966]
+```
+    
+We got π/2, which is 90˚, so we are facing up now. Now let's look were we would be if we turned right. (Note we still haven't modified state, so we are looking at where we would be if we turned right 90˚ from our original starting angle facing to the right.)
+
+```python
+>>> turtle.turn_right(state, turtle.deg2rad(90))
+[(50, 50), -1.5707963267948966]
 ```
 
-We got 0, which is facing up, and that is correct. Of course if you turn around one direction continually we'll get large numbers:
+We got -π/2, which is facing down, and that is correct. Of course if you turn around one direction continually we'll get large numbers:
 
 ```python
 >>> for i in range(1000):
-...     state = turtle.turn_left(state, turtle.deg2rad(90))
+...     state = turtle.turn_right(state, turtle.deg2rad(90))
 ...
 >>> state
-[(50, 50), -1569.2255304680955]
+[(50, 50), -1570.7963267948903]
 >>>
 ```
     
-In this case we turned left by 90˚ repeatedly for 1000 iterations. If we want, we can use floating point modulo to see if this is still the right value. It should only be one of 0˚, 90˚, 180˚, or 270˚.
+In this case we turned right by 90˚ repeatedly for 1000 iterations. If we want, we can use floating point modulo to see if this is still the right value. It should only be one of 0˚, 90˚, 180˚, or 270˚.
 
 ```python
 >>> import math
->>> -1569.2255304680955 % (math.pi * 2)
-1.570796326801073
+>>> -1570.7963267948903 % (math.pi * 2)
+6.23856521997368e-12
 ```
 
-As we can see, this is very close to our starting position, which is π/2:
-
-```python
->>> math.pi / 2.0
-1.5707963267948966
-```
-
-After 250 revolutions (1000 / 4), we have arrived back out our starting angle, but some floating point error has crept in. The difference is still relatively tiny:
-
-```python
->>> 1.570796326801073 - 1.5707963267948966
-6.176392730594671e-12
-```
+As we can see, this number is tiny and is basically zero. After 250 revolutions (1000 / 4), we have arrived back out our starting angle, but some floating point error has crept in.
 
 So far, so good. Let's look at our code listing now. With all the additions, it's getting longer.
 
@@ -1281,7 +1278,7 @@ def deg2rad(n):
     return math.pi * n / 180.0
 
 def delta(theta):
-    return (math.sin(theta), -math.cos(theta))
+    return (math.cos(theta), -math.sin(theta))
 
 def forward(state):
     [(x, y), angle] = state
@@ -1292,9 +1289,9 @@ def turn(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 
-turn_right = turn
+turn_left = turn
 
-def turn_left(state, amount):
+def turn_right(state, amount):
     return turn(state, -amount)
 
 def initial_state():
