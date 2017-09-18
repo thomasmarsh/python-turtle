@@ -927,21 +927,19 @@ Yikes! What's that all about? We expected a zero as the first number. Well, if w
 
 > _Why do we have these small values instead of exactly zero?_
 >
-> The value of π can't be accurately represented as a floating point number. The value of sin π should be 0, but in Python, we'll get a value of `1.2246467991473532e-16`. This represents an error term relative to the accuracy of our representation of π. Working with any irrational number (e.g., `1 / 3`) will result in these sorts of small errors creeping in. Some problems require numeric stability and will closely account for these situations. For most uses, it is necessary for the programmer just to keep an eye out for those exponential terms (`e-17`) and think of the value as zero.
+> The value of π can't be accurately represented as a floating point number. The value of sin π should be 0, but in Python, we'll get a value of `1.2246467991473532e-16`. This represents an error term relative to the accuracy of our representation of π. Working with any irrational number (e.g., `1.0 / 3.0`) will also result in these sorts of small errors creeping in. Some problems require numeric stability and will closely account for these situations. For most uses, it is necessary for the programmer just to keep an eye out for those exponential terms (`e-17`) and think of the value as zero.
 >
 > Going a little deeper: this does have implications when comparing two floating point numbers. Instead of testing `a == b`, you should define a function `rel_equal(a, b, bounds)`, which compares |a-b| (or in Python, `math.abs(a-b)`) and returns `True` if the result is less than `bounds`. Picking `bounds` is dependent on the problem at hand.
 >
 > If you want more information, I highly recommend the amazing and detailed discussion of these issues in [What Every Computer Scientist Should Know About Floating-Point Arithmetic](http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
 
-There's one more thing to notice: in all the drawing we've done, adding to y moves us _down_. We wanted `(0, -1)`, not `(0, 1)`. This difference is because our coordinate system on our screen is flipped from trigonometric norms. This is imporant to keep in mind. We'll have to negate the value of the y component to get our intended result on screen. So, when using `cos` and `sin` to compute our trajectory, we will have to always remember to take the negative of the `sin` result.
+There's one more thing to notice: in all the drawing we've done, adding to y moves us _down_. We wanted `(0, -1)`, not `(0, 1)`. This difference is because our coordinate system on our screen is flipped from geometry norms. This is imporant to keep in mind. We'll have to negate the value of the y component to get our intended result on screen. So, when using `cos` and `sin` to compute our trajectory, we will have to always remember to take the negative of the `sin` result.
 
 > _Why is the (0,0) origin of the window in the top left of the window, and the y-axis inverted?_
 >
 > This is a historical quirk of computing. In the early days of displays, the cathode ray tube (CRT) would start in the upper left hand of the screen. This established the convention that (0,0) was at the top left. Because the cathode ray proceeded from top-to-bottom, it was conventional that y value was considered to be increasing.
 
-Let's try a few more values, this time for π/2 (90˚, or "right"), which should move us one unit to the right.
-
-Let's finish off, looking at π (180˚, or "left") and 3*π/2 (270˚ or down).
+Let's try a few more values, looking at π (180˚, or "left") and 3*π/2 (270˚ or down).
 
 ```python
 >>> theta = math.pi
@@ -1026,7 +1024,7 @@ AttributeError: 'module' object has no attribute 'initial_state'
 
 it means you are either not in the same directory as `turtle.py` and getting a different module defined by the system, or that you did not add `initial_state` to `turtle.py` and save it before importing the module.
 
-The response shows that we are at position (50, 50) with an angle of 1.5707..., which is 90˚ in radians. Now, we want to get at those numbers and assign them to variables. We could do it this way:
+The response shows that we are at position (50, 50) with an angle of 0.0. Now, we want to get at those numbers and assign them to variables. We could do it this way:
 
 ```python
 >>> state = turtle.initial_state()
@@ -1089,8 +1087,24 @@ That example is basically the same as how we unpack the state with the tuple as 
 >>> state = turtle.initial_state()
 >>> [(x, y), angle] = state
 >>> turtle.delta(angle)
-(1.0, -6.123233995736766e-17)
+(1.0, -0.0)
 ```
+
+> _Why is zero negative?_
+>
+> Computers number representation using a standard called IEEE 754. This representation specifies the first bit in a floating point number represents the sign. So negative zero is in fact allowed. In our example, we return `sin(0)`, which is 0, but then we negate it, so we see the result of `-0.0`. It's worth noting that 0.0 is equal to `-0.0`. We can test this interactively
+>
+> ```python
+> >>> positive_zero = 0.0
+> >>> negative_zero = -positive_zero
+> >>> positive_zero
+> 0.0
+> >>> negative_zero
+> -0.0
+> >>> positive_zero == negative_zero
+> True
+> ```
+> Wikipedia has a [great article](https://en.wikipedia.org/wiki/Signed_zero) on the topic of signed zero with more details and some explanations on the motivations behind this behavior.
 
 Let's assign those to values:
 
