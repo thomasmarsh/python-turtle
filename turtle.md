@@ -992,7 +992,7 @@ Now, within the the same directory as your `turtle.py` do the following:
 
 If you get this error:
 
-```
+```python
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
 AttributeError: 'module' object has no attribute 'initial_state'
@@ -1427,13 +1427,13 @@ We create an instance of a `Foo` object by calling the class like a function: `F
 
 The `def __init__(self, my_number):` method declation looks a little different than functions we've seen before. We're passing something called `self`. This variable called `self` points to the specific instance of the class that had it's method called. It doesn't have to be called self. It could be called `this_instance` or whatever you want, however, `self` is the standard convention in Python. All that matters for now is this rule: all functions inside of classes require their instance (`self`) as the first argument.  You can imagine that:
 
-```
+```python
 >>> foo1 = Foo(1)
 ```
     
 is equivalent to:
 
-```
+```python
 >>> foo1 = <magic to create a Foo object>
 >>> Foo.__init__(foo1, 1)
 ```
@@ -1442,7 +1442,7 @@ is equivalent to:
 
 We'll create multiple foo objects to show how they differ from the class.
 
-```
+```python
 >>> foo1 = Foo(1)
 >>> foo2 = Foo(2)
 >>> foo1.number

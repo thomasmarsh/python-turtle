@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 Renumbers the turtle.md section headings and generates the table of contents.
@@ -13,19 +14,28 @@ import re
 
 TOC_BEGIN = '## Table of Contents\n'
 
+
+# Heading format
+
+"""
+A parsed heading is of the form `(numbered, tpl)` where `numbered` is a boolean,
+indicating whether this is a numbered section. The `tpl` component has a
+different structure depending on `numbered`. If `numbered` is True, it has the
+following format:
+
+    (level,     # header level string     (e.g., '##' for H2)
+     anchor,    # anchor 'name' attribute (e.g., 'draw')
+     number,    # section number          (e.g., '3.4.1')
+     title)     # section title           (e.g., 'Moiré Patterns')
+
+If not numbered, then it is simply a two-tuple:
+
+    (level,     # heading level string    (e.g., '##' for H2)
+     title)     # section title           (e.g, 'Introduction')
+"""
+
+# Regex to match a numbered heading
 HEADING_RE = '^(#+) <a name="([a-z]+)"><\/a>(\d+(?:\.\d+)*)(?:&nbsp;){3}(.*)'
-
-
-# Global utility functions
-
-def check(cond, msg):
-    if not cond:
-        sys.stderr.write(msg)
-        sys.exit(-1)
-
-def split_unnumbered(heading):
-    return tuple(map(lambda x: x.strip(),
-                     heading.split(' ', 1)))
 
 def split_heading(heading):
     m = re.match(HEADING_RE, heading)
@@ -33,7 +43,14 @@ def split_heading(heading):
         return (False, split_unnumbered(heading))
     return (True, m.groups())
 
+def split_unnumbered(heading):
+    return tuple(map(lambda x: x.strip(),
+                     heading.split(' ', 1)))
+
 def unsplit_heading((numbered, tpl)):
+    """
+    Converts a parsed heading into a flat markdown string.
+    """
     if not numbered:
         return ' '.join(tpl) + '\n'
     (level, anchor, number, title) = tpl
@@ -41,6 +58,9 @@ def unsplit_heading((numbered, tpl)):
     return fmt.format(level, anchor, number, '&nbsp;'*3, title)
 
 def unsplit_link((_, anchor, number, title)):
+    """
+    Builds a line suitable for a TOC entry.
+    """
     indent = len(number.split('.'))-1
     assert(indent >= 0)
     fmt = '{0}* {1}{2}[{3}](#{4})\n'
@@ -50,14 +70,28 @@ def unsplit_link((_, anchor, number, title)):
                       title,
                       anchor)
 
+# Global utility functions
+
+def check(cond, msg):
+    if not cond:
+        sys.stderr.write(msg)
+        sys.exit(-1)
+
+def indices_matching(cond, xs):
+    return [i for i, line in enumerate(xs)
+            if cond(line)]
+
+def chunks(l, n):
+    """Yield successive n-sized chunks from l."""
+    for i in xrange(0, len(l), n):
+        yield tuple(l[i:i + n])
+
 def filter_numbered(headings):
-    filtered = [h for (numbered, h) in headings if numbered]
-    return filtered
+    return [h for (numbered, h) in headings if numbered]
 
 def get_lengths(headings):
     filtered = filter_numbered(headings)
-    lengths = [len(h[0]) for h in filtered]
-    return lengths
+    return [len(h[0]) for h in filtered]
 
 def renumber(headings):
     lengths = get_lengths(headings)
@@ -134,9 +168,14 @@ class Renumber:
         renumbered = renumber(self.headings)
         i = 0
         skip = False
+        code_block = False
         with open(self.path, 'w') as f:
             for line in self.lines:
-                if line.startswith('#'):
+
+                if line.startswith == '```':
+                    code_block = not code_block
+
+                if not code_block and line.startswith('#'):
                     if line == TOC_BEGIN:
                         skip = True
                         self.write_toc(f, renumbered)
@@ -154,8 +193,21 @@ class Renumber:
                 for i in self.find_heading_indices()]
 
     def find_heading_indices(self):
-        return [i for i, line in enumerate(self.lines)
-                if line.startswith('#')]
+        code_blocks = indices_matching(lambda x: x.startswith('```'),
+                                       self.lines)
+        check(len(code_blocks) % 2 == 0,
+              'Error: unbalanced code block delimiters detected in file')
+
+
+        pairs = chunks(code_blocks, 2)
+
+        # A line is a header if it starts with '#' and is not within
+        # a code block.
+        def is_header((n, line)):
+            return (not any(a <= n <= b for (a, b) in pairs)
+                    and line.startswith('#'))
+
+        return indices_matching(is_header, enumerate(self.lines))
 
 # Main
 
