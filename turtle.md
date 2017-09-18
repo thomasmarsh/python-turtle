@@ -786,7 +786,11 @@ def main():
     win.close()
 ```
 
-Now when we run the program, we'll see that the lines only occupy the upper left hand of the window. We need to tell the `moire_lines` function what width and height to use. The current function has hard-coded the width and height to 200 pixels:
+Now when we run the program, we'll see that the lines only occupy the upper left hand of the window.
+
+![Moiré pattern running at higher resolution, but with an error](images/moire-large-error.png)
+
+We need to tell the `moire_lines` function what width and height to use. The current function has hard-coded the width and height to 200 pixels:
 
 ```python
 def moire_lines(win):
@@ -833,6 +837,10 @@ def moire_lines(win, width, height):
 
 if __name__ == '__main__': main()
 ```
+
+This produces the correct result:
+
+![Moiré pattern running at higher resolution, with error corrected](images/moire-large.png)
 
 > _Notice anything else changed?_
 >
