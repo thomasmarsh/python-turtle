@@ -348,7 +348,7 @@ in an orderly fashion. Such habits will pay off when building more complex progr
 
 Now run the script again, after saving your changes to the file. You should see a window that matches the following:
 
-![alt text](images/draw.png "draw.py")
+![Drawing simple shapes](images/draw.png "draw.py")
 
 This time the window should stay on screen. When you click inside the window, you'll see that the program exits.
 
@@ -403,7 +403,11 @@ win.getMouse()
 win.close()
 ```
 
-Now run it and you should see some lines drawn in two passes. The first pass creates some vertical lines, and the second
+Now run it and you should see some lines drawn in two passes. You should see an image generated that matches the following.
+
+![Moiré pattern based on overlapping lines](images/moire-lines.png)
+
+The first pass creates some vertical lines, and the second
 pass creates the same number of lines but with their one of their x coordinates offset by a variable amount. The result
 is what is called the _[moiré pattern](https://en.wikipedia.org/wiki/Moir%C3%A9_pattern)_. You can also create moiré
 patterns with other regular shapes, like circles:
@@ -424,6 +428,10 @@ for p in [Point(50, 100), Point(150, 100)]:
 win.getMouse()
 win.close()
 ```
+
+This results in another pattern being generated:
+
+![Moiré pattern using based on overlapping circles](images/moire-circles.png)
 
 There are two loops here, so you might want to think about what this program is doing. If you're unsure, you might add
 some `print` statements to help see what's going on. Since the output can go by a little quickly, we're also going
