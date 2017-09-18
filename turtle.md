@@ -499,6 +499,188 @@ Try replacing the equivalent line in this script and verify that you get a large
 * Use variables to store the screen size. Call them `max_x` and `max_y`, for example, respectively for the width and the height of the window. Modify your moiré code so that it uses these variables so that it always covers the whole screen regardless of what `max_x` and `max_y` values you use. Again, this is easiest with the lines example, `moire.py`. However, for a more advanced geometry challenge, you could try this for circle examples too.
 * Modify the lines example so that it only uses one loop instead of two.
 
+### <a name="color"></a>4&nbsp;&nbsp;&nbsp;Working with Color
+
+Aside from our first steps, we've just been drawing black and white lines and circles. Since we won't be doing anything colorful for a little while, let's learn the basics of coloring now.
+
+#### <a name="rgb"></a>4&nbsp;&nbsp;&nbsp;RGB Colorspace
+You've already seen some use of color, like this following snippt from the beginning of the tutorial.
+
+```python
+# Create and draw a circle
+c = Circle(Point(100, 100), 15)
+c.draw(win)
+
+# Manipulate our circle
+c.setFill('red')
+c.setOutline('green')
+c.move(-20, -20)
+```
+
+We use `setFill` on the circle instance to tell it to color the circle red. Here we just write the string `'red'`. `graphics.py` only has a limited vocabulary when it comes to colors. If we want to express colors outside its small set or if we want to choose colors programmatically, we have to take a different approach.
+
+Colors can also be expressed by the red/green/blue (RGB) components, or "channels". There are two common ways to represent a color in the RGB color space. Sometimes each component is as percentages, a number between 0 and 1. For example, pure red could be represented by the value `(1.0, 0.0, 0.0)`. Similarly, aquamarine would be represented as (0.5, 1.0, 0.83). More common is to represent the components as integers in the range 0-255. This means it is an 8-bit color channel since it has the range of an 8-bit integer. Using this convention, aquamarine would be (172, 255, 212). Both conventions are used widely, but `graphics.py` uses 8-bit color channels.
+
+> _How many colors can we represent with 8-bit components?_
+>
+> If the color components range from 0-255, we know that each component is 8-bit. We say the overall "color depth" is then 24-bit (= 8 * 3). That can represent 2<sup>24</sup> colors which is 16,777,216 distinct colors. (The human eye can differentiate perceive roughly 10 million colors at a time.)
+>
+> 24-bit color is referred to as "True color", which is a marketing term to distinguish itself from the earlier "Hi-color" (15/16-bit color depth) and 8-bit color (which could only display 256 total colors on screen at a time). Higher color-depths are also available, known as "deep color". Deep color is 30-, 36-, or 48-bit, providing a billion or more colors. Special hardware is required to operate at these color depths.
+
+#### <a name="hex"></a>4&nbsp;&nbsp;&nbsp;Working in Hexdecimal
+
+Although colors are specified in 8-bit channels in `graphics.py`, we actually have to tell `setFill` and other functions in a special format. The format is string that has the form `'#RRGGBB'`, where RR, GG, and BB are the two digit _hexadecimal_ representation of the number. In that rendering, `0` is `'00'` and 255 is `'FF'`. The color white is `'#FFFFFF'`, and black is `'#000000'`, while aquamarine would be `'#7FFFD4'`.
+
+For simplicity and consistency, we'll say that the length should always be 7 (the `#` plus six hex digits). However, in case you ever run across it, be aware that three-digit color codes are also supported. ('#123' is the same as '#112233', '#FFF' is the same as '#FFFFFF', etc.)
+
+Note that you don't have to use upper-case for the hexadecimal digits. Both work fine, and `'#7fffd4'` is equivalent to `'#7FFFD4'`. (Lower-case seems to be more popular nowadays.)
+
+We can try this out interactively by setting the window background to a specific color.
+
+```python
+>>> from graphics import *
+>>> win = GraphWin()
+>>> win.setBackground('#7fffd4')
+```
+
+In Python, you can use hexadecimal literals directly in programs, but you have to prefix it with `0x`.
+
+```python
+>>> 0x7F
+127
+>>> 0xFF
+255
+>>> 0xD4
+212
+```
+
+This doesn't help us make a string in hex format, though:
+
+```python
+>>> str(0x7F)
+'127'
+```
+
+It's value is still 127. Python just lets us enter numbers in our program in a base that is convenient.
+
+> _How does the `0x` prefix work?_
+>
+> Python, and several other programming languages accept numbers in several bases. In Python's case, you denote a different base by typing a `0` followed by a letter (in this case `x`) to denote the base, followed by the number itself. So `x` means "hexadecimal" in this syntax.
+>
+> Other bases are supported too, including octal (base 8, e.g., `0o1234567`) and binary (base 2, e.g., `0b1010101`).
+
+#### <a name="strings"></a>4&nbsp;&nbsp;&nbsp;Format Strings
+
+The goal is to generate a string representation of our number in hexadecimal format. There is a concise way to do that built into the string object. Using the `format` method in conjunction with a special placeholder in a string will insert a value.
+
+```python
+>>> '{}'.format(123)
+'123'
+```
+
+(This is equivalent to doing `str(123)`, however `str` only knows how to create a decimal representation.)
+
+We can pass multiple options to be interpolated into the string, and they can be almost any type.
+
+```python
+>>> 'First option: {}, second option: {}'.format(123, 'abc')
+'First option: 123, second option: abc'
+```
+
+An optional index let's you specify which argument should appear where, and it may appear multiple times.
+
+```python
+>>> 'First option: {0}, second option: {1}, first option again: {0}'.format(123, 'abc')
+'First option: 123, second option: abc, first option again: 123'
+```
+
+Strings using these special placeholders are call "format strings. They are essentially a mini-language of their own and can be quite daunting to the beginner. The placeholders are called "replacement fields".
+
+We want to use a feature of format strings to provide a "format specification" for one of our arguments. Let's take an example:
+
+```python
+>>> '{:x}'.format(127)
+'7f'
+```
+
+There's our hexadecimal number! The format specifier is `x`, which means we wanted our argument to be represented in hexadecimal. The `:` indicates the beginning of a format specified.
+
+It would appear the format string for the RGB color will look like `#{:x}{:x}{:x}`. Let's try it with aquamarine.
+
+```python
+>>> '#{:x}{:x}{:x}'.format(0x7F, 0xFF, 0xDF)
+'#7fffdf'
+```
+
+Success! Now lets try another color like brown, for which we'll aim for `'#663300'`.
+
+```python
+>>> '#{:x}{:x}{:x}'.format(0x66, 0x33, 0x00)
+'#66330'
+>>> '{:x}'.format(0x00)
+'0'
+>>> '{:x}'.format(0x0a)
+'a'
+>>> '{:x}'.format(0x10)
+'10'
+```
+
+There's a problem. We only got one of our zeros. The issue is that we'll only get one digit unless the representation is more than one digit. What we desire is to prefix the number with a `0` in case it is less than `0x10`. Fortunately, we can use an additional feature of the format specifier to do this. Our format specifier is now `:02x`.
+
+```python
+>>> '{:02x}'.format(0x00)
+'00'
+>>> '{:02x}'.format(0x0a)
+'0a'
+>>> '{:02x}'.format(0x10)
+'10'
+>>> '#{:02x}{:02x}{:02x}'.format(0x66, 0x33, 0x00)
+'#663300'
+```
+
+A lot more can be done with format strings - it's a large topic. It's highly recommended to read the [format string syntax](https://docs.python.org/2/library/string.html#formatstrings) if you're doing anything complicated.
+
+**Python Exercises:**
+* Experiment with format strings. Can you generate binary and octal representations of numbers?
+
+#### <a name="squares"></a>4&nbsp;&nbsp;&nbsp;Colored Squares
+
+
+```python
+from graphics import *
+
+def rgb_to_color((r, g, b)):
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+def square(win, x, y, w, color_str):
+    s = Rectangle(Point(x, y), Point(x+w, y+w))
+    s.setFill(color_str)
+    s.draw(win)
+
+def draw(win, width, height):
+    r = 1
+    g = 234
+    b = 56
+    for y in range(0, height, 10):
+        for x in range(0, width, 10):
+            square(win, x, y, 10, rgb_to_color((r, g, b)))
+            r = (r * 2 + r) % 256
+            g = (g / 2 - g) % 256
+            b = (r * g - b) % 256
+            print r, g, b
+
+def main():
+    (width, height) = (200, 150)
+    win = GraphWin("Color", width, height)
+    win.setBackground('black')
+
+    draw(win, width, height)
+
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
 
 ## <a name="refactor"></a>4&nbsp;&nbsp;&nbsp;Refactoring
 
