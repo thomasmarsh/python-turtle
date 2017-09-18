@@ -43,6 +43,11 @@ will enable us to start getting interesting results sooner, but also familiarize
 * 3&nbsp;&nbsp;&nbsp;[Writing Scripts](#scripts)
 	* 3.1&nbsp;&nbsp;&nbsp;[A Simple Program](#simple)
 	* 3.2&nbsp;&nbsp;&nbsp;[Moiré Patterns](#moire)
+	* 3.3&nbsp;&nbsp;&nbsp;[Working with Color](#color)
+		* 3.3.1&nbsp;&nbsp;&nbsp;[RGB Colorspace](#rgb)
+		* 3.3.2&nbsp;&nbsp;&nbsp;[Working in Hexdecimal](#hex)
+		* 3.3.3&nbsp;&nbsp;&nbsp;[Format Strings](#strings)
+		* 3.3.4&nbsp;&nbsp;&nbsp;[Colored Squares](#squares)
 * 4&nbsp;&nbsp;&nbsp;[Refactoring](#refactor)
 	* 4.1&nbsp;&nbsp;&nbsp;[Revisiting Moiré Lines](#revisit)
 	* 4.2&nbsp;&nbsp;&nbsp;[Wrap it in `main()`](#main)
@@ -499,11 +504,11 @@ Try replacing the equivalent line in this script and verify that you get a large
 * Use variables to store the screen size. Call them `max_x` and `max_y`, for example, respectively for the width and the height of the window. Modify your moiré code so that it uses these variables so that it always covers the whole screen regardless of what `max_x` and `max_y` values you use. Again, this is easiest with the lines example, `moire.py`. However, for a more advanced geometry challenge, you could try this for circle examples too.
 * Modify the lines example so that it only uses one loop instead of two.
 
-### <a name="color"></a>4&nbsp;&nbsp;&nbsp;Working with Color
+### <a name="color"></a>3.3&nbsp;&nbsp;&nbsp;Working with Color
 
 Aside from our first steps, we've just been drawing black and white lines and circles. Since we won't be doing anything colorful for a little while, let's learn the basics of coloring now.
 
-#### <a name="rgb"></a>4&nbsp;&nbsp;&nbsp;RGB Colorspace
+#### <a name="rgb"></a>3.3.1&nbsp;&nbsp;&nbsp;RGB Colorspace
 You've already seen some use of color, like this following snippt from the beginning of the tutorial.
 
 ```python
@@ -527,7 +532,7 @@ Colors can also be expressed by the red/green/blue (RGB) components, or "channel
 >
 > 24-bit color is referred to as "True color", which is a marketing term to distinguish itself from the earlier "Hi-color" (15/16-bit color depth) and 8-bit color (which could only display 256 total colors on screen at a time). Higher color-depths are also available, known as "deep color". Deep color is 30-, 36-, or 48-bit, providing a billion or more colors. Special hardware is required to operate at these color depths.
 
-#### <a name="hex"></a>4&nbsp;&nbsp;&nbsp;Working in Hexdecimal
+#### <a name="hex"></a>3.3.2&nbsp;&nbsp;&nbsp;Working in Hexdecimal
 
 Although colors are specified in 8-bit channels in `graphics.py`, we actually have to tell `setFill` and other functions in a special format. The format is string that has the form `'#RRGGBB'`, where RR, GG, and BB are the two digit _hexadecimal_ representation of the number. In that rendering, `0` is `'00'` and 255 is `'FF'`. The color white is `'#FFFFFF'`, and black is `'#000000'`, while aquamarine would be `'#7FFFD4'`.
 
@@ -569,7 +574,7 @@ It's value is still 127. Python just lets us enter numbers in our program in a b
 >
 > Other bases are supported too, including octal (base 8, e.g., `0o1234567`) and binary (base 2, e.g., `0b1010101`).
 
-#### <a name="strings"></a>4&nbsp;&nbsp;&nbsp;Format Strings
+#### <a name="strings"></a>3.3.3&nbsp;&nbsp;&nbsp;Format Strings
 
 The goal is to generate a string representation of our number in hexadecimal format. There is a concise way to do that built into the string object. Using the `format` method in conjunction with a special placeholder in a string will insert a value.
 
@@ -643,7 +648,7 @@ A lot more can be done with format strings - it's a large topic. It's highly rec
 **Python Exercises:**
 * Experiment with format strings. Can you generate binary and octal representations of numbers?
 
-#### <a name="squares"></a>4&nbsp;&nbsp;&nbsp;Colored Squares
+#### <a name="squares"></a>3.3.4&nbsp;&nbsp;&nbsp;Colored Squares
 
 
 ```python
