@@ -116,20 +116,21 @@ def enumerate_headings(lengths):
     check(lengths[0] == 2,
           "first heading must be level H2 (got H%d)" % lengths[0])
 
-    prev = lengths[0]
+    last_len = lengths[0]
     result = [[1]]
     for length in lengths[1:]:
-        if length > prev:
-            check(length == prev + 1,
+        # Previous result. Note: do not mutate
+        prev = result[-1]
+
+        if length > last_len:
+            check(length == last_len + 1,
                   "found heading increase of more than one level")
-            r = result[-1][:]
-            result.append(r + [1])
+            result.append(prev + [1])
         else:
-            r = result[-1][:]
-            if length < prev:
-                r = result[-1][:length-1]
-            result.append(r[:-1] + [r[-1]+1])
-        prev = length
+            if length < last_len:
+                prev = prev[:length-1]
+            result.append(prev[:-1] + [prev[-1]+1])
+        last_len = length
     return result
 
 def get_path():
@@ -197,7 +198,6 @@ class Renumber:
                                        self.lines)
         check(len(code_blocks) % 2 == 0,
               'Error: unbalanced code block delimiters detected in file')
-
 
         pairs = chunks(code_blocks, 2)
 
