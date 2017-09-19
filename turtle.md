@@ -650,29 +650,79 @@ A lot more can be done with format strings - it's a large topic. It's highly rec
 
 #### <a name="squares"></a>3.3.4&nbsp;&nbsp;&nbsp;Colored Squares
 
+With all the tools necessary, it's time to pull things together. We can define a function which will take the color channels. We will write a functionthat takes RGB channels as integers and returns a color string.
+
+```python
+def rgb_to_color(r, g, b):
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+```
+
+What happens if any of the channels are less than or greater to zero? This might happen if we have an error elsewhere in our code. This is an opportune time to validate that the numbers we receive are within the expected range. We can test if a number `n` is in a range by asking if `0 <= n`  and `n <= 255`. Or put together, `0 <= n <= 255`.
+
+The `assert` function will force our program to crash if it is passed `False` (and will do nothing if it is passed `True`). It is a first line of defence when writing code which makes certain assumptions, like we do about the range of numbers. For example:
+
+```python
+>>> assert(0 <= 37 <= 255)
+>>> assert(0 <= 256 <= 255)
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+AssertionError
+```
+
+We'll modify our function to use this:
+
+```python
+def rgb_to_color(r, g, b):
+    # Test that all numbers are in range
+    for n in [r, g, b]:
+        assert(0 <= n <= 255)
+
+    # Build color string
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+```
+
+Now we use all these tools, and our existing knowledge of `graphics.py` to create an image with color. Place the following contents in a new file in your tutorial directory and call it `squares.py`.
 
 ```python
 from graphics import *
 
-def rgb_to_color((r, g, b)):
+def rgb_to_color(r, g, b):
+    # Test that all numbers are in range
+    for n in [r, g, b]:
+        assert(0 <= n <= 256)
+
+    # Build and return a color string
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 def square(win, x, y, w, color_str):
+    # Construct a Rectangle object
     s = Rectangle(Point(x, y), Point(x+w, y+w))
+
+    # Set the fill color. Note that the outline color will be black
+    # unless changed here too, using `setOutline`
     s.setFill(color_str)
+
+    # Draw our object on-screen
     s.draw(win)
 
 def draw(win, width, height):
-    r = 1
-    g = 234
-    b = 56
+    # We choose a random starting color set
+    (r, g, b) = (1, 234, 56)
+
+    # For each row
     for y in range(0, height, 10):
+
+        # For each column
         for x in range(0, width, 10):
-            square(win, x, y, 10, rgb_to_color((r, g, b)))
+
+            # Compute the RGB color string and draw the square
+            color = rgb_to_color(r, g, b)
+            square(win, x, y, 10, color)
+
+            # Cycle the colors
             r = (r * 2 + r) % 256
             g = (g / 2 - g) % 256
             b = (r * g - b) % 256
-            print r, g, b
 
 def main():
     (width, height) = (200, 150)
@@ -686,6 +736,14 @@ def main():
 
 if __name__ == '__main__': main()
 ```
+
+This program cycles through some pleasant colors generating a series of colored squares. The result should match the following.
+
+![Color cycling demonstration](images/color.png)
+
+**Python Exercises:**
+* Modify the example to color the square according to different rules.
+* See if you can apply interesting coloring rules to the moiré pattern examples we tried earlier.
 
 ## <a name="refactor"></a>4&nbsp;&nbsp;&nbsp;Refactoring
 
