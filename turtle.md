@@ -684,6 +684,8 @@ def rgb_to_color(r, g, b):
 Now we use all these tools, and our existing knowledge of `graphics.py` to create an image with color. Place the following contents in a new file in your tutorial directory and call it `squares.py`.
 
 ```python
+#!/usr/bin/env python
+
 from graphics import *
 
 def rgb_to_color(r, g, b):
@@ -694,47 +696,40 @@ def rgb_to_color(r, g, b):
     # Build and return a color string
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-def square(win, x, y, w, color_str):
-    # Construct a Rectangle object
-    s = Rectangle(Point(x, y), Point(x+w, y+w))
+# Set up window
+(width, height) = (200, 150)
+win = GraphWin("Color", width, height)
+win.setBackground('black')
 
-    # Set the fill color. Note that the outline color will be black
-    # unless changed here too, using `setOutline`
-    s.setFill(color_str)
+# We choose a random starting color set
+(r, g, b) = (1, 234, 56)
 
-    # Draw our object on-screen
-    s.draw(win)
+# For each row
+for y in range(0, height, 10):
 
-def draw(win, width, height):
-    # We choose a random starting color set
-    (r, g, b) = (1, 234, 56)
+    # For each column
+    for x in range(0, width, 10):
 
-    # For each row
-    for y in range(0, height, 10):
+        # Compute the RGB color string and draw the square
+        color = rgb_to_color(r, g, b)
 
-        # For each column
-        for x in range(0, width, 10):
+        # Construct a Rectangle object
+        s = Rectangle(Point(x, y), Point(x+w, y+w))
 
-            # Compute the RGB color string and draw the square
-            color = rgb_to_color(r, g, b)
-            square(win, x, y, 10, color)
+        # Set the fill color. Note that the outline color will be black
+        # unless changed here too, using `setOutline`
+        s.setFill(color_str)
 
-            # Cycle the colors
-            r = (r * 2 + r) % 256
-            g = (g / 2 - g) % 256
-            b = (r * g - b) % 256
+        # Draw our object on-screen
+        s.draw(win)
 
-def main():
-    (width, height) = (200, 150)
-    win = GraphWin("Color", width, height)
-    win.setBackground('black')
+        # Cycle the colors
+        r = (r * 2 + r) % 256
+        g = (g / 2 - g) % 256
+        b = (r * g - b) % 256
 
-    draw(win, width, height)
-
-    win.getMouse()
-    win.close()
-
-if __name__ == '__main__': main()
+win.getMouse()
+win.close()
 ```
 
 This program cycles through some pleasant colors generating a series of colored squares. The result should match the following.
@@ -923,12 +918,12 @@ By reducing the number of global names, we reduce our cognitive load. We only ne
 Now, our program is looking pretty good. Let's make some more improvements though. We can go much further. First, we can rewrite `moire_lines` so it only has one loop.
 
 ```python
-def moire_lines(blarney):
+def moire_lines(win):
     for x in range(0, 200, 2):
         line = Line(Point(x, 0), Point(x, 200))
-        line.draw(blarney)
+        line.draw(win)
         line = Line(Point(x, 0), Point(x+(x/2), 200))
-        line.draw(blarney)
+        line.draw(win)
 ```
 
 Deleting the second `for` loop line was all it took since it was identical to the first. The body of the second loop was already at the right indentation level. Convenient. Now instead of drawing the lines in two passes, there will be only one pass during which we draw two lines at a time.
@@ -995,6 +990,7 @@ def moire_lines(win):
 
 if __name__ == '__main__': main()
 ```
+
 
 **Python Exercises:**
 * `draw_line` is nice because it hides all the `Point` and `Line` stuff from `graphics.py`, giving us a much simpler interface. It is a very short function, with only two lines of code. However, we can reduce it to only one line of code and eliminate the `line` variable altogether. Can you see how?
@@ -1093,6 +1089,62 @@ This produces the correct result:
 
 Try various values for `width` and `height` and notice how the pattern always fills the window now.
 
+Refactoring the [color squares](#squares) example using the techniques we just learned results in the following code. Compare this code to the original.
+
+```python
+from graphics import *
+
+def rgb_to_color(r, g, b):
+    # Test that all numbers are in range
+    for n in [r, g, b]:
+        assert(0 <= n <= 256)
+
+    # Build and return a color string
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+def square(win, x, y, w, color_str):
+    # Construct a Rectangle object
+    s = Rectangle(Point(x, y), Point(x+w, y+w))
+
+    # Set the fill color. Note that the outline color will be black
+    # unless changed here too, using `setOutline`
+    s.setFill(color_str)
+
+    # Draw our object on-screen
+    s.draw(win)
+
+def draw(win, width, height):
+    # We choose a random starting color set
+    (r, g, b) = (1, 234, 56)
+
+    # For each row
+    for y in range(0, height, 10):
+
+        # For each column
+        for x in range(0, width, 10):
+
+            # Compute the RGB color string and draw the square
+            color = rgb_to_color(r, g, b)
+            square(win, x, y, 10, color)
+
+            # Cycle the colors
+            r = (r * 2 + r) % 256
+            g = (g / 2 - g) % 256
+            b = (r * g - b) % 256
+
+def main():
+    (width, height) = (200, 150)
+    win = GraphWin("Color", width, height)
+    win.setBackground('black')
+
+    draw(win, width, height)
+
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
+
 **Python Exercises:**
 * Let's modify `moire_lines` to make a different pattern. Try to reason about this change before running it. What do you think will happen?
 
@@ -1105,6 +1157,7 @@ def moire_lines(win, width, height):
 ```
 
 * In the previous exercise, there is a white gap left between the two passes of lines. Can you fix it?
+* Refactor the moiré circles program from earlier using the principles you've just learned.
 
 ## <a name="turtle"></a>5&nbsp;&nbsp;&nbsp;Turtle Graphics
 
