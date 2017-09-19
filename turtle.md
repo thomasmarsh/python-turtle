@@ -697,28 +697,27 @@ def rgb_to_color(r, g, b):
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 # Set up window
-(width, height) = (200, 150)
-win = GraphWin("Color", width, height)
+win = GraphWin("Color", 200, 150)
 win.setBackground('black')
 
 # We choose a random starting color set
 (r, g, b) = (1, 234, 56)
 
 # For each row
-for y in range(0, height, 10):
+for y in range(0, 150, 10):
 
     # For each column
-    for x in range(0, width, 10):
+    for x in range(0, 200, 10):
 
         # Compute the RGB color string and draw the square
         color = rgb_to_color(r, g, b)
 
         # Construct a Rectangle object
-        s = Rectangle(Point(x, y), Point(x+w, y+w))
+        s = Rectangle(Point(x, y), Point(x+10, y+10))
 
         # Set the fill color. Note that the outline color will be black
         # unless changed here too, using `setOutline`
-        s.setFill(color_str)
+        s.setFill(color)
 
         # Draw our object on-screen
         s.draw(win)
@@ -742,11 +741,7 @@ This program cycles through some pleasant colors generating a series of colored 
 
 ## <a name="refactor"></a>4&nbsp;&nbsp;&nbsp;Refactoring
 
-So far our scripts have been very simple. In order to add functionality, we're going to want to do more complex things.
-That will require reorganizing our code a little bit. In software engineering, the process of restructuring existing code
-is called [refactoring](https://en.wikipedia.org/wiki/Code_refactoring). Our goal in refactoring this code is to enable
-higher levels of abstraction. Along the way, we'll learn how to use functions effectively, and common best practices in
-Python.
+so far our scripts have been very simple, but have been growing in complexity. in order to add functionality and still be able to keep track of everything, we're going to have to get a little more organized. The colored squares example, for instance, was getting a little complicated and long. In software engineering, the process of restructuring existing code is called [refactoring](https://en.wikipedia.org/wiki/code_refactoring). our goal in refactoring this code is to enable higher levels of abstraction. along the way, we'll learn how to use functions effectively, and common best practices in python.
 
 ### <a name="revisit"></a>4.1&nbsp;&nbsp;&nbsp;Revisiting Moiré Lines
 
@@ -1089,9 +1084,11 @@ This produces the correct result:
 
 Try various values for `width` and `height` and notice how the pattern always fills the window now.
 
-Refactoring the [color squares](#squares) example using the techniques we just learned results in the following code. Compare this code to the original.
+Refactoring the [color squares](#squares) example using the techniques we just learned results in the following code. Place this in file called `squares2.py`. Compare this to the original `squares.py` we developed and see if you can find the motivation for all the changes.
 
 ```python
+#!/usr/bin/env python
+
 from graphics import *
 
 def rgb_to_color(r, g, b):
@@ -1102,42 +1099,47 @@ def rgb_to_color(r, g, b):
     # Build and return a color string
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
-def square(win, x, y, w, color_str):
+def square(win, x, y, step, (r, g, b)):
     # Construct a Rectangle object
-    s = Rectangle(Point(x, y), Point(x+w, y+w))
+    s = Rectangle(Point(x, y), Point(x+step, y+step))
 
     # Set the fill color. Note that the outline color will be black
     # unless changed here too, using `setOutline`
-    s.setFill(color_str)
+    s.setFill(rgb_to_color(r, g, b))
 
     # Draw our object on-screen
     s.draw(win)
 
-def draw(win, width, height):
+def next_color(r, g, b):
+    # Cycle the colors
+    r = (r * 2 + r) % 256
+    g = (g / 2 - g) % 256
+    b = (r * g - b) % 256
+    return (r, g, b)
+
+def draw(win, width, height, step):
     # We choose a random starting color set
     (r, g, b) = (1, 234, 56)
 
     # For each row
-    for y in range(0, height, 10):
+    for y in range(0, height, step):
 
         # For each column
-        for x in range(0, width, 10):
+        for x in range(0, width, step):
 
-            # Compute the RGB color string and draw the square
-            color = rgb_to_color(r, g, b)
-            square(win, x, y, 10, color)
-
-            # Cycle the colors
-            r = (r * 2 + r) % 256
-            g = (g / 2 - g) % 256
-            b = (r * g - b) % 256
+            square(win, x, y, step, (r, g, b))
+            (r, g, b) = next_color(r, g, b)
 
 def main():
-    (width, height) = (200, 150)
+    # The size of our squares
+    step = 10
+
+    (width, height) = 200, 150
+
     win = GraphWin("Color", width, height)
     win.setBackground('black')
 
-    draw(win, width, height)
+    draw(win, width, height, step)
 
     win.getMouse()
     win.close()
@@ -1145,7 +1147,13 @@ def main():
 if __name__ == '__main__': main()
 ```
 
+Notice how much easier it is to change constants like `width`, `height`, and the `step`. Logic is also broken down into smaller and easier to comprehend units.
+
+If we need to change any thing, or if something is broken, performing these steps will make it easier to think through what needs to change and how to do it. Instead of thinking about dozens of global variables and imperative statements, we can now think in terms of overall structure and engage our architectural sense.
+
 **Python Exercises:**
+* Modify `squares2.py` to use different values for height, width, and step. Make the same change to the original (pre-refactor) `squares.py`. Did you find it more difficult?
+* Using the [modulo operator](https://en.wikipedia.org/wiki/Modulo_operation) (e.g., `123 % step`), modify `squares2.py` to use a window width and height that exactly fits the squares that will be drawn. Notice that the program currently cuts off the black border on the bottom and right-hand portions of the screen. Can you fix this? Try it it with varying values of `width`, `height`, and `step`. Compare how you would make those changes in the original `squares.py`.
 * Let's modify `moire_lines` to make a different pattern. Try to reason about this change before running it. What do you think will happen?
 
 ```python
@@ -1157,6 +1165,7 @@ def moire_lines(win, width, height):
 ```
 
 * In the previous exercise, there is a white gap left between the two passes of lines. Can you fix it?
+* Add a color gradient to the moiré examples. Consider setting the window background to black and use the color-cycling code from `squares2.py`. Notice that it is easy to extract the functions you need now that the code is refactored.
 * Refactor the moiré circles program from earlier using the principles you've just learned.
 
 ## <a name="turtle"></a>5&nbsp;&nbsp;&nbsp;Turtle Graphics
