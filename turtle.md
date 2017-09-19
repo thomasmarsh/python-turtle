@@ -48,6 +48,7 @@ will enable us to start getting interesting results sooner, but also familiarize
 		* 3.3.2&nbsp;&nbsp;&nbsp;[Working in Hexdecimal](#hex)
 		* 3.3.3&nbsp;&nbsp;&nbsp;[Format Strings](#strings)
 		* 3.3.4&nbsp;&nbsp;&nbsp;[Colored Squares](#squares)
+		* 3.3.5&nbsp;&nbsp;&nbsp;[Viewing the Spectrum](#spectrum)
 * 4&nbsp;&nbsp;&nbsp;[Refactoring](#refactor)
 	* 4.1&nbsp;&nbsp;&nbsp;[Revisiting Moiré Lines](#revisit)
 	* 4.2&nbsp;&nbsp;&nbsp;[Wrap it in `main()`](#main)
@@ -536,7 +537,7 @@ Colors can also be expressed by the red/green/blue (RGB) components, or "channel
 
 Although colors are specified in 8-bit channels in `graphics.py`, we actually have to tell `setFill` and other functions in a special format. The format is string that has the form `'#RRGGBB'`, where RR, GG, and BB are the two digit _hexadecimal_ representation of the number. In that rendering, `0` is `'00'` and 255 is `'FF'`. The color white is `'#FFFFFF'`, and black is `'#000000'`, while aquamarine would be `'#7FFFD4'`.
 
-For simplicity and consistency, we'll say that the length should always be 7 (the `#` plus six hex digits). However, in case you ever run across it, be aware that three-digit color codes are also supported. ('#123' is the same as '#112233', '#FFF' is the same as '#FFFFFF', etc.)
+For simplicity and consistency, we'll say that the length should always be 7 (the `#` plus six hex digits). However, in case you ever run across it, be aware that three-digit color codes are also supported. (`'#123'` is the same as `'#112233'`, `'#FFF'` is the same as `'#FFFFFF'`, etc.)
 
 Note that you don't have to use upper-case for the hexadecimal digits. Both work fine, and `'#7fffd4'` is equivalent to `'#7FFFD4'`. (Lower-case seems to be more popular nowadays.)
 
@@ -739,9 +740,281 @@ This program cycles through some pleasant colors generating a series of colored 
 * Modify the example to color the square according to different rules.
 * See if you can apply interesting coloring rules to the moiré pattern examples we tried earlier.
 
+#### <a name="spectrum"></a>3.3.5&nbsp;&nbsp;&nbsp;Viewing the Spectrum
+
+Now for some algorithm fun, with the goal of visualizing the color spectrum. We won't be learning any new Python-specific skills here. This section is focused purely on general programming.
+
+Let's start with a simple goal of drawing a gradient from one color to another. Where to start? It is often helpful to start with a simple example. Let's say we're drawing a gradient from red (`(255, 0, 0)`) to blue (`(0, 0, 255)`). Our midpoint will be purple (`(127, 0, 127)`).
+
+Let's draw our gradient from left to right, so we'll have red on the left and blue on the right. We'll draw it as a series of tall, skinny rectangles of varying color. At the left, we'll be 100% red and 0% blue. The inverse will hold true at the right, and at the midpoint we'll be 50%/50%. So, this translates to a fairly straightforward way to apply our gradient. For a given color, and a percentage amount (`0.0` to `1.0`) we can scale the amount of the contribution from the two sides. For our example, we will set the left-hand of the window as the 0% side and the right as the 100% side.
+
+This will hopefully become clearer with some code. We'll call the progress from left to right `t`. For a test, we'll just use numbers instead of the RGB triples.
+
+```python
+>>> t = 0.0
+>>> a = 10.0
+>>> b = 20.0
+```
+
+When `t` is 0, we want the contribution from `b` to be 0%. That's easy, we can just multiply `b` times `t`. That also covers the contribution from `b` in the case that `t` is 100% too (`1.0 * b == b`). So we no know that term. The term for the contribution from `a` is actually just `1.0 - t`. Let's try this for various amounts.
+
+
+```python
+>>> t = 0.0
+>>> ((1-t)*a, t*b)
+>>> (10.0, 0.0)
+```
+
+That's correctly 100% for `a` and 0% for `b`. The inverse case works too.
+
+```python
+>>> t = 1.0
+>>> ((1-t)*a, t*b)
+>>> (0.0, 20.0)
+```
+
+And finally, the midpoint at 50%:
+
+```python
+>>> t = 0.5
+>>> ((1-t)*a, t*b)
+>>> (5.0, 10.0)
+```
+
+If we add these up, that is `15`, exactly the midpoint between our `a` and `b`.
+
+This is referred to as [linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation), and commonly shortened to "lerp" in computing. We can trivially define a lerp function in Python.
+
+```python
+>>> def lerp(a, b, t):
+...     return (1-t)*a + t*b
+...
+>>> lerp(10.0, 20.0, 0.0)
+10.0
+>>> lerp(10.0, 20.0, 1.0)
+20.0
+>>> lerp(10.0, 20.0, 0.5)
+15.0
+```
+
+For our gradient, we want to lerp between RGB values. So we'll use this `lerp` function function to build a way to interpolate between two colors:
+
+```python
+def lerp(a, b, t):
+    return (1-t)*a + t*b
+
+def lerp_rgb(ca, cb, t):
+    return (int(lerp(ca[0], cb[0], t)),
+            int(lerp(ca[1], cb[1], t)),
+            int(lerp(ca[2], cb[2], t)))
+```
+
+Let's try these out.
+
+```python
+>>> lerp_rgb(start, end, 0)
+(255, 0, 0)
+>>> lerp_rgb(start, end, 1)
+(0, 0, 255)
+>>> lerp_rgb(start, end, 0.5)
+(127, 0, 127)
+```
+
+Place the following code in to a file called `gradient.py` in your tutorial directory.
+
+```python
+#!/usr/bin/env python
+
+from graphics import *
+
+def lerp(a, b, t):
+    return (1-t)*a + t*b
+
+def lerp_rgb(ca, cb, t):
+    return (int(lerp(ca[0], cb[0], t)),
+            int(lerp(ca[1], cb[1], t)),
+            int(lerp(ca[2], cb[2], t)))
+
+def rgb_to_color(r, g, b):
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+start = (255, 0, 0)
+end = (0, 0, 255)
+
+win = GraphWin("Gradient", 200, 200)
+for x in range(0, 200, 10):
+    rect = Rectangle(Point(x, 0), Point(x+10, 200))
+
+    # Our `t` is equal to the percentage of the screen we've processed
+    (r, g, b) = lerp_rgb(start, end, x/float(200))
+    color = rgb_to_color(r, g, b)
+    rect.setFill(color)
+    rect.setOutline(color)
+
+    rect.draw(win)
+
+win.getMouse()
+win.close()
+```
+
+Run it and you should see the following result.
+
+![Red to blue gradient](images/gradient.png)
+
+To draw the spectrum, we're going to extend the interpolation to two dimensions. This is referred to as [bilinear interpoloation](https://en.wikipedia.org/wiki/Bilinear_interpolation). The code looks a lot more complicated, but most of that is due to our inability to express things like adding two RGB triples or multiplying a scalar against an RGB triple. With a linear algebra library these functions would look much simpler and more intuitive, and the equivalent linear algebra code is included in the comments. Place the following code in a file called `spectrum.py` in your tutorial directory.
+
+
+```python
+#!/usr/bin/env/python
+
+from graphics import *
+
+# Multiply t against all elements
+def rgb_multiply(t, (r, g, b)):
+    return (t*r, t*g, t*b)
+
+
+# Add two RGB vectors element-wise
+def rgb_add(c1, c2):
+    return (c1[0] + c2[0],
+            c1[1] + c2[1],
+            c1[2] + c2[2])
+
+# Lerp in two dimensions.
+def bilinear(tx, ty, c00, c10, c01, c11):
+    # With a linear algebra package this would just be:
+    #
+    #     a = (1-tx)*c00 + tx*c10;
+    #     b = (1-tx)*c01 + tx*c11;
+    #     return (1-ty)*a + ty*b
+
+    a = rgb_add(rgb_multiply(1-tx, c00),
+                rgb_multiply(tx,   c10))
+
+    b = rgb_add(rgb_multiply(1-tx, c01),
+                rgb_multiply(tx,   c11))
+
+    return rgb_add(rgb_multiply(1-ty, a),
+                   rgb_multiply(ty, b))
+
+
+def rgb_to_color(r, g, b):
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+def spectrum(tx, ty):
+    # The colors that dominate each quadrant
+    c00 = (255, 0,   0)   # Red     - Top left
+    c10 = (0,   255, 0)   # Green   - Top right
+    c01 = (128, 0,   255) # Violet  - Bottom left
+    c11 = (0,   0,   255) # Blue    - Bottom right
+
+    (r, g, b) = bilinear(tx, ty, c00, c10, c01, c11)
+
+    # We need to convert the values back to ints
+    return (int(r), int(g), int(b))
+
+size = 4
+width, height = (512, 512)
+
+# NOTE: we turn off flushing (last param False) so that we can
+# draw this screen in a reasonable amount of time.
+win = GraphWin("Spectrum", width, height, False)
+
+for y in range(0, height, size):
+    ty = y/float(height)
+
+    for x in range(0, width, size):
+        tx = x/float(width)
+
+        # Find curent color
+        (r, g, b) = spectrum(tx, ty)
+        color = rgb_to_color(r, g, b)
+
+        square = Rectangle(Point(x, y), Point(x+size, y+size))
+        square.setFill(color)
+        square.setOutline(color)
+        square.draw(win)
+
+win.getMouse()
+win.close()
+```
+
+You should be rewarded with an image like the following.
+
+![The color spectrum](images/spectrum.png)
+
+
+For our spectrum, we choose to put red in the top-left corner, green in the top-right corner, blue in the bottom-left corner, and violet in the bottom left.
+
+> _Why include violet?_
+>
+> For one thing, we have only three dimensions of color and we're trying to interpolate them across four dimensions. So we must pick some color. However, violet is useful for a specific reason.
+>
+> RGB is a convenient model for color for computing, but it's not representative of how humans perceive color. The different types of cones in our eyes are sensitive to different color wavelengths, and it turns out that we are more sensitive to green. By choosing violet, we are supporting the blue and red ends of the spectrum in our program, and de-emphasizing green. Since green is so dominant, you cannot tell that it is being diminished.
+
+For fun, we can also play around with other blending models. Try this example program, pasting it into a script called `blend.py` in your tutorial directory.
+
+```python
+#!/usr/bin/env python
+
+from graphics import *
+
+def lerp(a, b, t):
+    return (1-t)*a + t*b
+
+def lerp_rgb(ca, cb, t):
+    return (int(lerp(ca[0], cb[0], t)),
+            int(lerp(ca[1], cb[1], t)),
+            int(lerp(ca[2], cb[2], t)))
+
+def blend(tx, ty):
+    a = (255, 0,   0)   # Red
+    b = (0,   255, 0)   # Green
+    c = (255, 255, 0)   # Yellow
+    d = (0,   0,   255) # Blue
+
+    color_t = lerp_rgb(a, b, tx)
+    color_u = lerp_rgb(c, d, ty)
+    return lerp_rgb(color_t, color_u, 0.5)
+
+def rgb_to_color(r, g, b):
+    return '#{:02x}{:02x}{:02x}'.format(r, g, b)
+
+size = 4
+width, height = (512, 512)
+
+# NOTE: we turn off flushing (last param False) so that we can
+# draw this screen in a reasonable amount of time.
+win = GraphWin("Spectrum", width, height, False)
+
+for y in range(0, height, size):
+    ty = y/float(height)
+
+    for x in range(0, width, size):
+        tx = x/float(width)
+
+        # Find curent color
+        (r, g, b) = blend(tx, ty)
+        color = rgb_to_color(r, g, b)
+
+        square = Rectangle(Point(x, y), Point(x+size, y+size))
+        square.setFill(color)
+        square.setOutline(color)
+        square.draw(win)
+
+win.getMouse()
+win.close()
+```
+
+You should see the following output.
+
+![Using `lerp` to blend colors](images/blend.png)
+
+Playing around with various blending strategies and algorithms can produce interesting results. Some, like the bilinear interpolation example, are easier to reason about than others. But even random tweaks to algorithms can sometimes create interesting results.
+
 ## <a name="refactor"></a>4&nbsp;&nbsp;&nbsp;Refactoring
 
-so far our scripts have been very simple, but have been growing in complexity. in order to add functionality and still be able to keep track of everything, we're going to have to get a little more organized. The colored squares example, for instance, was getting a little complicated and long. In software engineering, the process of restructuring existing code is called [refactoring](https://en.wikipedia.org/wiki/code_refactoring). our goal in refactoring this code is to enable higher levels of abstraction. along the way, we'll learn how to use functions effectively, and common best practices in python.
+So far, our scripts have been very simple, but have been growing in complexity. in order to add functionality and still be able to keep track of everything, we're going to have to get a little more organized. The colored squares example, for instance, was getting a little complicated and long. In software engineering, the process of restructuring existing code is called [refactoring](https://en.wikipedia.org/wiki/code_refactoring). Our goal in refactoring this code is to enable higher levels of abstraction. Along the way, we'll learn how to use functions effectively, and common best practices in python.
 
 ### <a name="revisit"></a>4.1&nbsp;&nbsp;&nbsp;Revisiting Moiré Lines
 
@@ -1725,7 +1998,9 @@ Running this again, we finally see something worthwhile! It's great that we're n
 
 ### <a name="class"></a>5.4&nbsp;&nbsp;&nbsp;Giving our Turtle Some Class
 
-Let's face it: our interface to manipulate turtle graphics sucks. It's almost unusable. We have to pass this state variable around and constantly get the current position from each intermediate state. These is the sort of problem classes and objects are capable of solving. We've mentioned them before, and now we're going to write one. This is going to be a crash course in [object oriented programming (OOP)](https://en.wikipedia.org/wiki/Object-oriented_programming). It's okay if you don't understand everything now.
+Let's face it: our interface to manipulate turtle graphics sucks. It's almost unusable. We have to pass this state variable around and constantly get the current position from each intermediate state. These is the sort of problem classes and objects are capable of solving. We've mentioned them before, and now we're going to write one. This is going to be a crash course in [object oriented programming (OOP)](https://en.wikipedia.org/wiki/Object-oriented_programming).
+
+It's okay if you don't understand everything at first. The aim at first is familiarity. The examples will build on the concepts developed in this section, and it won't hurt if you don't get" some of it immediately.
 
 #### <a name="classdef"></a>5.4.1&nbsp;&nbsp;&nbsp;Classes
 
