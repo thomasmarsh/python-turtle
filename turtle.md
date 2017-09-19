@@ -365,9 +365,7 @@ This time the window should stay on screen. When you click inside the window, yo
 > directly by typing `python ./draw.py` at the prompt. However, it is possible, with some additional work to invoke the
 > script directly.
 > 
-> First, type `chmod 755 ./draw.py`. `chmod` changes the flags of a file on disk. We've given it 755
-> as an argument. This seemingly magic number will make your script executable. (These numbers are actually octal, and,
-> if you are interested, you can read an [explanation](http://www.thinkplexx.com/learn/article/unix/command/chmod-permissions-flags-explained-600-0600-700-777-100-etc).) Now, instead of typing `python ./draw.py`, you can simply type `./draw.py` and the program should run.
+> First, type `chmod +x ./draw.py`. `chmod` changes the flags of a file on disk and `+x` tells it that the file should be directly executable. Now, instead of typing `python ./draw.py`, you can simply type `./draw.py` and the program should run.
 >
 > As to the shebang, we can break it down. The `#` is just a comment in python. However, when followed by an exclamation
 > mark (`#!`) on the first line, it has special meaning indicating that it is a shebang. Everything after the exclamation
