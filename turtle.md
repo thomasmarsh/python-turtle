@@ -17,9 +17,9 @@ _for Laura Andrea_
 
 ## Introduction
 
-This tutorial intends to teach how to draw simple graphics to the screen for the beggining Python programmer. Along the
+This tutorial intends to teach how to draw simple graphics to the screen for the begining Python programmer. Along the
 way, you'll learn some things about operating systems, the UNIX shell, data types, and parsing / string processing. All
-of these foundational skills will help even if your primary interest isn't graphics. It is assumed that you already know
+of these foundation skills will help even if your primary interest isn't graphics. It is assumed that you already know
 the basics of Python, including variables, functions (`def`), loops (`for` and `while`), types (e.g., `string` vs `int`),
 and basic data structures (lists, dictionaries, and tuples). You should also understand the difference between
 [Python 2 and Python 3](https://wiki.python.org/moin/Python2orPython3) and how to open a terminal. At this time, this
@@ -80,7 +80,7 @@ you start at after you initially open the terminal.
 
 **Shell Exercises:**
 * At the command line, type `echo $SHELL`. This tells you which program you are using as your shell. What shell are you running? 
-* The `$` in front of a name is a shell variable, also called an *environment variable*. Like Python, the shell is its own full-fledge programming language. You can see all environment variables by typing `env` at the prompt. Try it now.
+* The `$` in front of a name is a shell variable, also called an *environment variable*. Like Python, the shell is its own full-fledged programming language. You can see all environment variables by typing `env` at the prompt. Try it now.
 * The command `echo` is a way to print something to the screen (just like `print` in python), like we did with the `echo $SHELL` example above. Try the commands `echo $HOME` and `echo ~`. What does this tell you about the `$HOME` environment variable?
 
 > _If shell is like another programming language, why do I have to learn it? I only wanted to learn Python!_
@@ -508,7 +508,7 @@ Try replacing the equivalent line in this script and verify that you get a large
 Aside from our first steps, we've just been drawing black and white lines and circles. Since we won't be doing anything colorful for a little while, let's learn the basics of coloring now.
 
 #### <a name="rgb"></a>3.3.1&nbsp;&nbsp;&nbsp;RGB Colorspace
-You've already seen some use of color, like this following snippt from the beginning of the tutorial.
+You've already seen some use of color, like this following snippet from the beginning of the tutorial.
 
 ```python
 # Create and draw a circle
@@ -547,7 +547,7 @@ We can try this out interactively by setting the window background to a specific
 >>> win.setBackground('#7fffd4')
 ```
 
-In Python, you can use hexadecimal literals directly in programs, but you have to prefix it with `0x`.
+In Python, you can use hexadecimal literals directly in programs, but you have to prefix them with `0x`.
 
 ```python
 >>> 0x7F
@@ -649,7 +649,7 @@ A lot more can be done with format strings - it's a large topic. It's highly rec
 
 #### <a name="squares"></a>3.3.4&nbsp;&nbsp;&nbsp;Colored Squares
 
-With all the tools necessary, it's time to pull things together. We can define a function which will take the color channels. We will write a functionthat takes RGB channels as integers and returns a color string.
+With all the tools necessary, it's time to pull things together. We can define a function which will take the color channels. We will write a function that takes RGB channels as integers and returns a color string.
 
 ```python
 def rgb_to_color(r, g, b):
@@ -658,7 +658,7 @@ def rgb_to_color(r, g, b):
 
 What happens if any of the channels are less than or greater to zero? This might happen if we have an error elsewhere in our code. This is an opportune time to validate that the numbers we receive are within the expected range. We can test if a number `n` is in a range by asking if `0 <= n`  and `n <= 255`. Or put together, `0 <= n <= 255`.
 
-The `assert` function will force our program to crash if it is passed `False` (and will do nothing if it is passed `True`). It is a first line of defence when writing code which makes certain assumptions, like we do about the range of numbers. For example:
+The `assert` function will force our program to crash if it is passed `False` (and will do nothing if it is passed `True`). It is a first line of defense when writing code which makes certain assumptions, like we do about the range of numbers. For example:
 
 ```python
 >>> assert(0 <= 37 <= 255)
@@ -742,7 +742,7 @@ This program cycles through some pleasant colors generating a series of colored 
 
 Now for some algorithm fun, with the goal of visualizing the color spectrum. We won't be learning any new Python-specific skills here. This section is focused purely on general programming.
 
-Let's start with a simple goal of drawing a gradient from one color to another. Where to start? It is often helpful to start with a simple example. Let's say we're drawing a gradient from red (`(255, 0, 0)`) to blue (`(0, 0, 255)`). Our midpoint will be purple (`(127, 0, 127)`).
+Let's start with a simple goal of drawing a gradient, a smooth blend, from one color to another. Where to start? It is often helpful to start with a simple example. Let's say we're drawing a gradient from red (`(255, 0, 0)`) to blue (`(0, 0, 255)`). Our midpoint will be purple (`(127, 0, 127)`).
 
 Let's draw our gradient from left to right, so we'll have red on the left and blue on the right. We'll draw it as a series of tall, skinny rectangles of varying color. At the left, we'll be 100% red and 0% blue. The inverse will hold true at the right, and at the midpoint we'll be 50%/50%. So, this translates to a fairly straightforward way to apply our gradient. For a given color, and a percentage amount (`0.0` to `1.0`) we can scale the amount of the contribution from the two sides. For our example, we will set the left-hand of the window as the 0% side and the right as the 100% side.
 
@@ -754,7 +754,7 @@ This will hopefully become clearer with some code. We'll call the progress from 
 >>> b = 20.0
 ```
 
-When `t` is 0, we want the contribution from `b` to be 0%. That's easy, we can just multiply `b` times `t`. That also covers the contribution from `b` in the case that `t` is 100% too (`1.0 * b == b`). So we no know that term. The term for the contribution from `a` is actually just `1.0 - t`. Let's try this for various amounts.
+When `t` is 0, we want the contribution from `b` to be 0%. That's easy, we can just multiply `b` times `t`. That also covers the contribution from `b` in the case that `t` is 100% too (`1.0 * b == b`). So we now know that term. The term for the contribution from `a` is actually just `1.0 - t`. Let's try this for various amounts.
 
 
 ```python
@@ -763,7 +763,7 @@ When `t` is 0, we want the contribution from `b` to be 0%. That's easy, we can j
 >>> (10.0, 0.0)
 ```
 
-That's correctly 100% for `a` and 0% for `b`. The inverse case works too.
+That's correct 100% for `a` and 0% for `b`. The inverse case works too.
 
 ```python
 >>> t = 1.0
@@ -859,7 +859,7 @@ Run it and you should see the following result.
 
 ![Red to blue gradient](images/gradient.png)
 
-To draw the spectrum, we're going to extend the interpolation to two dimensions. This is referred to as [bilinear interpoloation](https://en.wikipedia.org/wiki/Bilinear_interpolation). The code looks a lot more complicated, but most of that is due to our inability to express things like adding two RGB triples or multiplying a scalar against an RGB triple. With a linear algebra library these functions would look much simpler and more intuitive, and the equivalent linear algebra code is included in the comments. Place the following code in a file called `spectrum.py` in your tutorial directory.
+To draw the spectrum, we're going to extend the interpolation to two dimensions. This is referred to as [bilinear interpolation](https://en.wikipedia.org/wiki/Bilinear_interpolation). The code looks a lot more complicated, but most of that is due to our inability to express things like adding two RGB triples or multiplying a scalar against an RGB triple. With a linear algebra library these functions would look much simpler and more intuitive, and the equivalent linear algebra code is included in the comments. Place the following code in a file called `spectrum.py` in your tutorial directory.
 
 
 ```python
@@ -1047,7 +1047,7 @@ every time we start a new script. By refactoring, we're going to isolate those r
 > _We've also had to repeat the shebang and the import statement in every program. Can we refactor those?_
 >
 > Every "executable script" should have the shebang as the first line of the program. An "executable script" is the script
-> which you directly run with `python ./my_script.py` (or or with `./script.py` if you've done a `chmod 755` on it). You'll
+> which you directly run with `python ./my_script.py` (or or with `./script.py` if you've done a `chmod +x` on it). You'll
 > notice that `graphics.py` does not have a shebang. This is because it is not expected to be run directly as an executable
 > script. (-Although you actually can. Try it!) It's main purpose is to be imported by other scripts. This means that
 > `graphics.py` is considered a Python "module" or "library". The difference between "executable script" and "module" is
@@ -1270,7 +1270,7 @@ During our refactor, we invoked several well known principles from computer scie
 * The [KISS principle](https://en.wikipedia.org/wiki/KISS_principle) is a term from the 1960s US Navy. It stands for "Keep It Simple Stupid". It is based on the recognition that systems work best (fewer bugs or issue, easier to maintain, easier to understand) if they are kept as simple as possible.
 * The [Single Responsibility Principle](https://en.wikipedia.org/wiki/Single_responsibility_principle) says that a variable, function, class, or module should only have one meaning. It is colorfully captured in [this quote](http://waura1.rssing.com/chan-1910818/latest.php): "It is sort of like applying Curly’s law (Single Responsibility Principle) to variables. A variable should mean one thing, and one thing only. It should not mean one thing in one circumstance, and carry a different value from a different domain some other time. It should not mean two things at once. It must not be both a floor polish and a dessert topping. It should mean One Thing, and should mean it all of the time."
 * [Separation of Concerns](https://en.wikipedia.org/wiki/Separation_of_concerns) means that we shouldn't mix different types of functionality in one place. In our code examples, for example, we separated the drawing of the lines from the presentation of the window.
-* [Don't Repeat Yourself (DRY)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) is a core principle that can vastly improve your software development. Less repetition means you're only implementiong a specific behavior once, and that functionality can only break in one place. If you find yourself typing the same thing over and over again, it's likely theres an opportunity for abstraction.
+* [Don't Repeat Yourself (DRY)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) is a core principle that can vastly improve your software development. Less repetition means you're only implementing a specific behavior once, and that functionality can only break in one place. If you find yourself typing the same thing over and over again, it's likely there's an opportunity for abstraction.
 * [The Magical Number 7 +/- 2](https://en.wikipedia.org/wiki/The_Magical_Number_Seven,_Plus_or_Minus_Two) is a cognitive load metric. If you find you have more than 7 things going on (7 variables in a function, for example, or perhaps around 7 lines of code in a function), it will be difficult to reason about. Keeping in mind this cognitive load limit will help you maintain the simplicity of your programs.
 
 In performing function decomposition of our moiré script, we tried to simplify what we were doing. Not only was the result easier on the eyes, we managed to isolate line drawing functionality to one function. Since the `draw_line` function now works well, it is unlikely we are going to introduce any errors in that part of the code in the future. We'll rely on all of the above principles as we proceed.
@@ -1420,7 +1420,7 @@ if __name__ == '__main__': main()
 
 Notice how much easier it is to change constants like `width`, `height`, and the `step`. Logic is also broken down into smaller and easier to comprehend units.
 
-If we need to change any thing, or if something is broken, performing these steps will make it easier to think through what needs to change and how to do it. Instead of thinking about dozens of global variables and imperative statements, we can now think in terms of overall structure and engage our architectural sense.
+If we need to change anything, or if something is broken, performing these steps will make it easier to think through what needs to change and how to do it. Instead of thinking about dozens of global variables and imperative statements, we can now think in terms of overall structure and engage our architectural sense.
 
 **Python Exercises:**
 * Modify `squares2.py` to use different values for height, width, and step. Make the same change to the original (pre-refactor) `squares.py`. Did you find it more difficult?
@@ -1479,7 +1479,7 @@ Using our list format, now our initial state can be described as `[(50, 50), deg
 
 #### <a name="trajectory"></a>5.2.1&nbsp;&nbsp;&nbsp;Calculating a Trajectory
 
-Moving the turtle forward requires a trigonometric review. Given an angle, we want to know how to move the turtle one unit in that direction from it's current point. Consider the [unit circle](https://en.wikipedia.org/wiki/Unit_circle), which is just a circle with radius 1 centered at (0,0). If (x,y) is a coordinate on the circle's perimeter, and θ (theta) is an angle, then cos(θ) = x and sin(θ) = y.
+Moving the turtle forward requires a trigonometric review. Given an angle, we want to know how to move the turtle one unit in that direction from its current point. Consider the [unit circle](https://en.wikipedia.org/wiki/Unit_circle), which is just a circle with radius 1 centered at (0,0). If (x,y) is a coordinate on the circle's perimeter, and θ (theta, not zero) is an angle, then cos(θ) = x and sin(θ) = y.
 
 In our world, the unit of measures is pixels, so moving in one unit means moving one pixel. Let's try some interactive math in Python to validate our understanding with a θ value of 0π (0˚, or "right").
 
@@ -1511,7 +1511,7 @@ Yikes! What's that all about? We expected a zero as the first number. Well, if w
 >
 > If you want more information, I highly recommend the amazing and detailed discussion of these issues in [What Every Computer Scientist Should Know About Floating-Point Arithmetic](http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html).
 
-There's one more thing to notice: in all the drawing we've done, adding to y moves us _down_. We wanted `(0, -1)`, not `(0, 1)`. This difference is because our coordinate system on our screen is flipped from geometry norms. This is imporant to keep in mind. We'll have to negate the value of the y component to get our intended result on screen. So, when using `cos` and `sin` to compute our trajectory, we will have to always remember to take the negative of the `sin` result.
+There's one more thing to notice: in all the drawing we've done, adding to y moves us _down_. We wanted `(0, -1)`, not `(0, 1)`. This difference is because our coordinate system on our screen is flipped from geometry norms. This is important to keep in mind. We'll have to negate the value of the y component to get our intended result on screen. So, when using `cos` and `sin` to compute our trajectory, we will have to always remember to take the negative of the `sin` result.
 
 > _Why is the (0,0) origin of the window in the top left of the window, and the y-axis inverted?_
 >
@@ -1535,7 +1535,7 @@ Okay, we can see we have a gross exponent again, this time in the y coordinate. 
 
 In this case we consider this as `(0, -1)`, again ignoring the tiny fractional. Because of the y-axis inversion, we'll need to negate the y coordinate so our result should be `(0, 1)` for down.
 
-Now we are ready to define a function which takes and angle and gives us back the amount we should shift, our our "delta". We know that it is simply the `cos` of the angle for the x coordinate, and `-sin` of the angle for y (negated for the inverted axis).
+Now we are ready to define a function which takes and angle and gives us back the amount we should shift, or our "delta". The Greek letter delta is frequently used to indicate a change in a quantity - from the Greek word diaphorá, "difference". We'll call our function `delta`. We know that our delta is simply the `cos` of the angle for the x coordinate, and `-sin` of the angle for y (negated for the inverted axis).
 
 ```python
 def delta(theta):
@@ -1690,7 +1690,7 @@ Let's assign those to values:
 >>> (dx, dy) = turtle.delta(angle)
 ```
 
-Now we know what our next position will be, by adding those values to our current position: `(x+dx, y+dy)`.
+(It is common practice to prefix a variable that is a delta with the letter "d".) Now we know what our next position will be, by adding those values to our current position: `(x+dx, y+dy)`.
 
 ```python
 >>> (x+dx, y+dy)
@@ -2022,7 +2022,7 @@ A class doesn't do anything on its own, but it can be used as a template to crea
 >>> foo1 = Foo(1)
 ```
     
-We create an instance of a `Foo` object by calling the class like a function: `Foo(1)`. In this case we assigned it to the variable `foo1`. `foo1` now refers to an instance of the class `Foo`. If that's too abstract, we can go to a graphics example. In the graphics module we're using, we can say `p = Point(10, 10)`. `Point` is the class which is the prototype for all points. `p` is a new instance of this `Point` class, an object that we can use and which stores it's position at (10, 10). The class `Point` doesn't know anything about the position (10, 10) - it's just the factory for making instances of `Point` objects.
+We create an instance of a `Foo` object by calling the class like a function: `Foo(1)`. In this case we assigned it to the variable `foo1`. `foo1` now refers to an instance of the class `Foo`. If that's too abstract, we can go to a graphics example. In the graphics module we're using, we can say `p = Point(10, 10)`. `Point` is the class which is the prototype for all points. `p` is a new instance of this `Point` class, an object that we can use and which stores its position at (10, 10). The class `Point` doesn't know anything about the position (10, 10) - it's just the factory for making instances of `Point` objects.
 
 > _What's a Foo?_
 >
@@ -2030,9 +2030,9 @@ We create an instance of a `Foo` object by calling the class like a function: `F
 
 #### <a name="construct"></a>5.4.2&nbsp;&nbsp;&nbsp;Constructors
 
-`__init__` is a special function. (Special things in Python are often wrapped in double underscore, just like we saw with `__name__ == '__main__'`). The `__init__` function is what's called the "constructor". It builds a new instance of the class. Calling your class like a function (as in `Foo(1)`) causes Python to create a new instance of this class and then call `__init__` with the new instance as the first argument and any thing else you past (`1` in this case) as the next argument. Note that we almost always call functions inside of classes "methods", or "member functions" to differentiate them from regular functions that are not inside a class definition.
+`__init__` is a special function. (Special things in Python are often wrapped in double underscore, just like we saw with `__name__ == '__main__'`). The `__init__` function is what's called the "constructor". It builds a new instance of the class. Calling your class like a function (as in `Foo(1)`) causes Python to create a new instance of this class and then call `__init__` with the new instance as the first argument and anything else you past (`1` in this case) as the next argument. Note that we almost always call functions inside of classes "methods", or "member functions" to differentiate them from regular functions that are not inside a class definition.
 
-The `def __init__(self, my_number):` method declation looks a little different than functions we've seen before. We're passing something called `self`. This variable called `self` points to the specific instance of the class that had it's method called. It doesn't have to be called self. It could be called `this_instance` or whatever you want, however, `self` is the standard convention in Python. All that matters for now is this rule: all functions inside of classes require their instance (`self`) as the first argument.  You can imagine that:
+The `def __init__(self, my_number):` method declaration looks a little different than functions we've seen before. We're passing something called `self`. This variable called `self` points to the specific instance of the class that had its method called. It doesn't have to be called self. It could be called `this_instance` or whatever you want, however, `self` is the standard convention in Python. All that matters for now is this rule: all functions inside of classes require their instance (`self`) as the first argument.  You can imagine that:
 
 ```python
 >>> foo1 = Foo(1)
