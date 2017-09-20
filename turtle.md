@@ -947,7 +947,7 @@ For our spectrum, we choose to put red in the top-left corner, green in the top-
 
 > _Why include violet?_
 >
-> For one thing, we have only three dimensions of color and we're trying to interpolate them across four dimensions. So we must pick some color. However, violet is useful for a specific reason.
+> For one thing, we have only three dimensions of color and we're trying to interpolate them across two dimensions. So we must pick some color. However, violet is useful for a specific reason.
 >
 > RGB is a convenient model for color for computing, but it's not representative of how humans perceive color. The different types of cones in our eyes are sensitive to different color wavelengths, and it turns out that we are more sensitive to green. By choosing violet, we are supporting the blue and red ends of the spectrum in our program, and de-emphasizing green. Since green is so dominant, you cannot tell that it is being diminished.
 
