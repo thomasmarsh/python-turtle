@@ -66,7 +66,8 @@ will enable us to start getting interesting results sooner, but also familiarize
 		* 5.4.1&nbsp;&nbsp;&nbsp;[Classes](#classdef)
 		* 5.4.2&nbsp;&nbsp;&nbsp;[Constructors](#construct)
 		* 5.4.3&nbsp;&nbsp;&nbsp;[Instance Variables](#ivars)
-		* 5.4.4&nbsp;&nbsp;&nbsp;[Instance Variables](#xyz)
+		* 5.4.4&nbsp;&nbsp;&nbsp;[Adding Behavior](#methods)
+		* 5.4.5&nbsp;&nbsp;&nbsp;[Adding Behavior](#methods)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -1854,7 +1855,6 @@ We got -π/2, which is facing down, and that is correct. Of course if you turn a
 ...
 >>> state
 [(50, 50), -1570.7963267948903]
->>>
 ```
     
 In this case we turned right by 90˚ repeatedly for 1000 iterations. If we want, we can use floating point modulo to see if this is still the right value. It should only be one of 0˚, 90˚, 180˚, or 270˚.
@@ -2070,4 +2070,231 @@ We an see that both have an "attribute" called `number`. An attribute is often a
 >
 > [Simula](https://en.wikipedia.org/wiki/Simula) introduced the concept of objects and classes in 1962. When other languages came along, they introduce new concepts, or existing concepts were reinvented. Formal methodologies for design and architecture also came along, sometimes inventing new terms. The unfortunate situation is that we now use two or more terms interchangeably for the same things. Further complicating matters is that some terms are more correct when discussing certain languages over others.
 
-#### <a name="xyz"></a>5.4.4&nbsp;&nbsp;&nbsp;Instance Variables
+Through the use of instance variables, classes allow you to encapsulate state within an object. We'll make our own version of `Point` from `graphics.py`. Ours, however, won't be able to draw to screen. Create a new file called `geometry.py` with the following contents:
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'Point({}, {})'.format(self.x, self.y)
+```
+
+We've added a new method called `__repr__`. This is another special method, like `__init__`. `__repr__` is what gets called when you type `print my_object` or `str(my_object)`. What can think of those as doing is attempting to call `__repr__` and use that value. If it doesn't have a `__repr__` method, then it uses some generic behavior. Let's save this and try it out.
+
+```python
+>>> from geometry import *
+>>> p = Point(5, 10)
+>>> p
+Point(5, 10)
+```
+
+Try commenting out the `__repr__` method and try it again. `geometry.py` should look like this before you continue:
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    #def __repr__(self):
+    #    return 'Point({}, {})'.format(self.x, self.y)
+```
+
+Using this interactively:
+
+```python
+>>> from geometry import *
+>>> p = Point(5, 10)
+>>> p
+<classes.Point instance at 0x1042e0440>
+```
+
+we see that it's using a much less useful representation of our object.
+
+Restore the `__repr__` method by uncommenting it. Let's add a `Rectangle` class which uses the `Point` class. Update your `geometry.py` to add the following:
+
+```python
+class Rectangle:
+    def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+
+    def __repr__(self):
+        return 'Rectangle({}, {})'.format(str(self.p1),
+                                          str(self.p2))
+```
+
+Using this interactively, we can now use `Rectangle` interactively.
+
+```python
+>>> from geometry import *
+>>> r = Rectangle(Point(5, 10), Point(15, 20))
+>>> r
+Rectangle(Point(5, 10), Point(15, 20))
+>>> r.p1
+Point(5, 10)
+>>> r.p2
+Point(15, 20)
+>>> r.p1.x
+5
+>>> r.p1.y
+10
+>>> r.p2.x
+15
+>>> r.p2.y
+20
+```
+
+From this demonstration it is apparent that our Rectangle instance contains two different instances of the `Point` class, `p1` and `p2`. Those two points contain their own state. And we can query them for their state.
+
+#### <a name="methods"></a>5.4.4&nbsp;&nbsp;&nbsp;Adding Behavior
+
+We're already seen some examples of behavior on objects by the `__init__` and `__repr__` methods. We're going to add some more behavior, which will modify the internal state of the object. While we're at it, we'll also add some geometry functions.
+
+We've already talked about `self`, but this is where it should become much clearer. Let's add a method to `Rectangle` called `width`. Place this _inside_ of the class `Rectangle` for it to work.
+
+
+```python
+    def width(self):
+        return self.p2.x - self.p1.x
+```
+
+Hopefully that's clear. The width is just the difference between the x coordinates of the first and second points. Now, let's also add `height` and `area`.
+
+
+```python
+    def height(self):
+        return self.p2.y - self.p1.y
+
+    def area(self):
+        return self.width() * self.height()
+```
+
+Save your changes to `geometry.py` and let's try it.
+
+```python
+>>> from geometry import *
+>>> r = Rectangle(Point(3, 7), Point(11, 13))
+Rectangle(Point(3, 7), Point(11, 13))
+>>> r.width()
+8
+>>> r.height()
+6
+>>> r.area()
+48
+```
+
+Now let's really look at how `self` is set. When you type `r.width()`, that is actually just syntactic sugar for `Rectangle.width(r)`. So the instance of the class is always the first argument to a method. We can verify this:
+
+
+```python
+>>> Rectangle.width(r)
+8
+>>> Rectangle.area(r)
+48
+```
+
+All that has been up to now is to query the current state of an object. In the next step, we'll add a `move` method to relocate objects. Let's do this on `Point` first. Add the following method to `Point`.
+
+```python
+    def move(self, dx, dy):
+        self.x = self.x + dx
+        self.y = self.y + dy
+```
+
+Our `move` method takes a delta. Let's try this code.
+
+```python
+>>> from geometry import *
+>>> p = Point(5, 10)
+>>> p
+Point(5, 10)
+>>> p.move(-2, 3)
+>>> p
+Point(3, 13)
+```
+
+So, we can see that we have changed the `x` and `y` attributes of `p` successfully. As a slightly more complicated example, we'll add a `move` method to `Rectangle`, passing on our delta to the points.
+
+```python
+    def move(self, dx, dy):
+        self.p1.move(dx, dy)
+        self.p2.move(dx, dy)
+```
+
+We are just passing through the variables to the `Point` objects. When we do this we say that we are "delegating" the method.
+
+```python
+>>> from geometry import *
+>>> r = Rectangle(Point(3, 7), Point(11, 13))
+>>> r
+Rectangle(Point(3, 7), Point(11, 13))
+>>> r.move(6, -4)
+>>> r
+Rectangle(Point(9, 3), Point(17, 9))
+```
+
+We can see that the delegation has worked well. Your code listing should now match the following.
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return 'Point({}, {})'.format(self.x, self.y)
+
+    def move(self, dx, dy):
+        self.x = self.x + dx
+        self.y = self.y + dy
+
+class Rectangle:
+    def __init__(self, p1, p2):
+        self.p1 = p1
+        self.p2 = p2
+
+    def __repr__(self):
+        return 'Rectangle({}, {})'.format(str(self.p1),
+                                          str(self.p2))
+
+    def width(self):
+        return self.p2.x - self.p1.x
+
+    def height(self):
+        return self.p2.y - self.p1.y
+
+    def area(self):
+        return self.width() * self.height()
+
+    def move(self, dx, dy):
+        self.p1.move(dx, dy)
+        self.p2.move(dx, dy)
+```
+
+**Python exercises:**
+* Add a method called `scale` to `Rectangle` that resizes the rectangle by a factor retaining the top-left corner's position. For example, you should be able to reproduce the following behavior.
+
+```python
+>>> from geometry import *
+>>> r = Rectangle(Point(3, 4), Point(5, 8))
+>>> r.width()
+2
+>>> r.height()
+4
+>>> r.scale(2)
+>>> r
+Rectangle(Point(3, 4), Point(7, 12))
+>>> r.width()
+4
+>>> r.height()
+8
+```
+
+* Modify your `scale` method so that it can take two arguments, one for scaling in the x-axis and a second for scaling in the y-axis. It should provide a default value for the second argument of `None`. If the second argument is `None`, it should scale both dimensions of the rectangle by the the first argument. For example, `r.scale(0.5)` should reduce both dimensions by half, but `r.scale(2, 3)` would double the width and triple the height.
+* Add a class `Circle` and provide the `move`, `area`, and `scale` operations to it.
+
+#### <a name="methods"></a>5.4.5&nbsp;&nbsp;&nbsp;Adding Behavior
