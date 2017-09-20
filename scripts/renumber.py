@@ -35,7 +35,7 @@ If not numbered, then it is simply a two-tuple:
 """
 
 # Regex to match a numbered heading
-HEADING_RE = '^(#+) <a name="([a-z]+)"><\/a>(\d+(?:\.\d+)*)(?:&nbsp;){3}(.*)'
+HEADING_RE = '^(#+) <a name="([a-z][a-z0-9_]*)"><\/a>(\d+(?:\.\d+)*)(?:&nbsp;){3}(.*)'
 
 def split_heading(heading):
     m = re.match(HEADING_RE, heading)

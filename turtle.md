@@ -67,7 +67,8 @@ will enable us to start getting interesting results sooner, but also familiarize
 		* 5.4.2&nbsp;&nbsp;&nbsp;[Constructors](#construct)
 		* 5.4.3&nbsp;&nbsp;&nbsp;[Instance Variables](#ivars)
 		* 5.4.4&nbsp;&nbsp;&nbsp;[Adding Behavior](#methods)
-		* 5.4.5&nbsp;&nbsp;&nbsp;[Adding Behavior](#methods)
+	* 5.5&nbsp;&nbsp;&nbsp;[Refactoring a Turtle](#turtle2)
+	* 5.6&nbsp;&nbsp;&nbsp;[Revisiting Drawing](#using2)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -1768,8 +1769,8 @@ $ python ./turtle.py
 ```
 
 **Python exercises:**
-* Define a function called `turn_left` that takes an angle amount and our state representation and returns a new state which turns your turtle left by that number of radians. Also define one for `turn_right`.
-* Do you see a common pattern in the `turn_left` and `turn_right` functions you created? Can you refactor this code somehow to avoid any duplication?
+* Define a function called `left` that takes an angle amount and our state representation and returns a new state which turns your turtle left by that number of radians. Also define one for `right`.
+* Do you see a common pattern in the `left` and `right` functions you created? Can you refactor this code somehow to avoid any duplication?
 
 #### <a name="turn"></a>5.2.3&nbsp;&nbsp;&nbsp;Turning
 
@@ -1780,7 +1781,7 @@ Compared to moving forward, turning is going to be really easy. What we want is 
 # element and the current angle as the second element.
 #
 # `amount` is the angle in radians to adjust our current angle.
-def turn_left(state, amount):
+def left(state, amount):
     # 1. get the current position and angle from state
 
     # 2. return a new state adding amount to the angle
@@ -1789,42 +1790,42 @@ def turn_left(state, amount):
 Let's look at the solution.
 
 ```python
-def turn_left(state, amount):
+def left(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 ```
 
 The only interesting thing here that is really different is that we opted not to destructure the position coordinate into a tuple of `(x, y)` variables. If you were to inspect `position`, you would see that this is still a tuple holding the x and y coordinates.
 
-Turning right is the same as turning left, only this case we subtract the angle amount. Our implementation of `turn_right` looks very similar to `turn_left`.
+Turning right is the same as turning left, only this case we subtract the angle amount. Our implementation of `right` looks very similar to `left`.
 
 ```python
-def turn_right(state, amount):
+def right(state, amount):
     [position, angle] = state
     return [position, angle - amount]
 ```
 
-The only difference is that we subtract the changed angle amount. There is a chance to refactor this. We can rewrite `turn_right` to call `turn_left` with a negative amount.
+The only difference is that we subtract the changed angle amount. There is a chance to refactor this. We can rewrite `right` to call `left` with a negative amount.
 
 ```python
-def turn_right(state, amount):
-    return turn_left(state, -amount)
+def right(state, amount):
+    return left(state, -amount)
 ```
 
-Can you see why this is equivalent? Admittedly, it can be a bit confusing to see `turn_right` call `turn_left` internally. If we wanted to be semantically clear, we could rewrite this into three functions, adding a generic `turn` function which takes the amount.
+Can you see why this is equivalent? Admittedly, it can be a bit confusing to see `right` call `left` internally. If we wanted to be semantically clear, we could rewrite this into three functions, adding a generic `turn` function which takes the amount.
 
 ```python
 def turn(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 
-turn_left = turn
+left = turn
 
-def turn_right(state, amount):
+def right(state, amount):
     return turn(state, -amount)
 ```
 
-This is the version we'll use. Since `turn_left` and `turn` are the same, we can simply create `turn_left` as a variable assignment. It's still a function that can be called. Let's try these out interactively.
+This is the version we'll use. Since `left` and `turn` are the same, we can simply create `left` as a variable assignment. It's still a function that can be called. Let's try these out interactively.
 
 ```python
 >>> import turtle
@@ -1836,14 +1837,14 @@ This is the version we'll use. Since `turn_left` and `turn` are the same, we can
 We are facing right (0π, or 0˚). Let's see where we would be if we turned left an additional 90˚.
 
 ```python
->>> turtle.turn_left(state, turtle.deg2rad(90))
+>>> turtle.left(state, turtle.deg2rad(90))
 [(50, 50), 1.5707963267948966]
 ```
     
 We got π/2, which is 90˚, so we are facing up now. Now let's look were we would be if we turned right. (Note we still haven't modified state, so we are looking at where we would be if we turned right 90˚ from our original starting angle facing to the right.)
 
 ```python
->>> turtle.turn_right(state, turtle.deg2rad(90))
+>>> turtle.right(state, turtle.deg2rad(90))
 [(50, 50), -1.5707963267948966]
 ```
 
@@ -1851,7 +1852,7 @@ We got -π/2, which is facing down, and that is correct. Of course if you turn a
 
 ```python
 >>> for i in range(1000):
-...     state = turtle.turn_right(state, turtle.deg2rad(90))
+...     state = turtle.right(state, turtle.deg2rad(90))
 ...
 >>> state
 [(50, 50), -1570.7963267948903]
@@ -1889,9 +1890,9 @@ def turn(state, amount):
     [position, angle] = state
     return [position, angle + amount]
 
-turn_left = turn
+left = turn
 
-def turn_right(state, amount):
+def right(state, amount):
     return turn(state, -amount)
 
 def initial_state():
@@ -1908,7 +1909,7 @@ if __name__ == '__main__': main()
     
 ### <a name="using"></a>5.3&nbsp;&nbsp;&nbsp;Using our Turtle to Draw
 
-This has all been terribly boring. Let's draw something finally. Let's create a new file in the turtle subdirectory where we have `turtle.py`. Call this new file `draw.py` and fill it with the following contents:
+This has all been terribly boring. Let's draw something finally. Let's create a new file in the turtle subdirectory where we have `turtle.py`. Call this new file `simple.py` and fill it with the following contents:
 
 ```python
 #!/usr/bin/env python
@@ -1936,14 +1937,10 @@ def do_turtle_stuff(win):
     [b, _] = state
     draw_line(win, a, b)
 
-    state = turtle.turn_left(state, turtle.deg2rad(90))
+    state = turtle.left(state, turtle.deg2rad(90))
     state = turtle.forward(state)
     [c, _] = state
     draw_line(win, b, c)
-
-    state = turtle.forward(state)
-    [d, _] = state
-    draw_line(win, c, d)
     
 if __name__ == '__main__': main()
 ```
@@ -1971,7 +1968,7 @@ def forward(state, n=1):
         
 The definition of the function includes a new parameter `n`, which is the number of steps to move forward. Notice that we didn't just write the name `n`, but what looks like an assignment `n=1`. This is a default value. If we call `turtle.forward(state)`, then `n` will be equal to 1. However, if we want, we can pass a different number and it will override this default. For example, we can call `turtle.forward(state, 10)` to move 10 steps at once.
 
-We can now modify `draw.py` to use this. We change every instance of `turtle.forward` to pass the second argument as 10. The `do_turtle_stuff` function should now look like this:
+We can now modify `simple.py` to use this. We change every instance of `turtle.forward` to pass the second argument as 10. The `do_turtle_stuff` function should now look like this:
 
 ```python
 def do_turtle_stuff(win):
@@ -1982,14 +1979,10 @@ def do_turtle_stuff(win):
     [b, _] = state
     draw_line(win, a, b)
 
-    state = turtle.turn_left(state, turtle.deg2rad(90))
+    state = turtle.left(state, turtle.deg2rad(90))
     state = turtle.forward(state, 10)
     [c, _] = state
     draw_line(win, b, c)
-
-    state = turtle.forward(state, 10)
-    [d, _] = state
-    draw_line(win, c, d)
 ```
 
 Running this again, we finally see something worthwhile! It's great that we're now drawing turtle graphics, but this is nowhere as simple as it should be. For our next steps, we'll simplify our usage so we get closer to what we want.
@@ -2275,6 +2268,8 @@ class Rectangle:
         self.p2.move(dx, dy)
 ```
 
+Using these techniques we have hidden a lot of complexity behind a simple interface. In object-oriented parlance, we say that we have "encapsulated" that functionality. This is another tool in our refactoring toolbox for containing complexity.
+
 **Python exercises:**
 * Add a method called `scale` to `Rectangle` that resizes the rectangle by a factor retaining the top-left corner's position. For example, you should be able to reproduce the following behavior.
 
@@ -2297,4 +2292,298 @@ Rectangle(Point(3, 4), Point(7, 12))
 * Modify your `scale` method so that it can take two arguments, one for scaling in the x-axis and a second for scaling in the y-axis. It should provide a default value for the second argument of `None`. If the second argument is `None`, it should scale both dimensions of the rectangle by the the first argument. For example, `r.scale(0.5)` should reduce both dimensions by half, but `r.scale(2, 3)` would double the width and triple the height.
 * Add a class `Circle` and provide the `move`, `area`, and `scale` operations to it.
 
-#### <a name="methods"></a>5.4.5&nbsp;&nbsp;&nbsp;Adding Behavior
+### <a name="turtle2"></a>5.5&nbsp;&nbsp;&nbsp;Refactoring a Turtle
+
+In the previous attempt to track the turtle position and state, we used a list of two elements and a float to represent respectively our position and angle. Now we're going to encapsulate this state into it's own class. This class will be called `TurtleState`. Let's put it into a new file in the `turtle` subdirectory that we've doing our previous turtle code. Call the file `state.py`. Add the following contents to this file.
+
+```python
+import math
+
+def deg2rad(n):
+    return math.pi * n / 180.0
+
+def delta(theta):
+    return (math.cos(theta), -math.sin(theta))
+
+class TurtleState:
+    def __init__(self):
+        self.position = (50, 50)
+        self.angle = 0
+
+    def __repr__(self):
+        (x, y) = self.position
+        return 'TurtleState(({}, {}), {})'.format(x, y, self.angle)
+```
+
+
+So now, we're representing our state in this class with two member variables `position` and `angle`, and when we print it, we'll see a useful string.
+
+```python
+>>> from state import *
+>>> t = TurtleState()
+>>> print t
+TurtleState((50.0, 50.0), 0.0)
+```
+
+At this point, a good exercise would be to convert the remainder of the turtle functions we defined (`forward`, `turn`, `left`, and `right`) and reimplement them as methods of this class. Instead returning a state, they simply need to modify `self.position` or `self.angle` and don't need a return statement. If you do this on your own, then stop reading here.
+
+The simplest of our functions to turn into a method is `turn` (which is synonymous with `left`). Previously, we had to destructure the state list into coordinates and an angle, and then return a new list. Our implementation in `TurtleState` is very simple. While we're at it, we'll add a default turning angle of 90˚.
+
+```python
+    def turn(self, amount=deg2rad(90)):
+        self.angle += amount
+```
+
+> _What does `+=` mean?_
+>
+> If you haven't come across this before, `+=` is convenient shorthand. `x += y` is the same as `x = x + y`. This is really useful when dealing with long names or deep nesting of classes (for example, `long_var_name.long_property_name.x += 1` is much shorter than the original). Other operators can use this syntax too, including `-=`, `*=`, `/=`, `%=` (modulo), and more esoteric operators too.
+
+Just like with our previous `left` function, we can also just assign the `turn` to `left` like a variable within te class body, and the implementation of `right` is straightforward, calling `self.turn` with a negated angle.
+j
+```python
+    left = turn
+
+    def right(self, amount):
+        self.turn(-amount)
+```
+
+Moving forward is a little more complicated, but no more so than our original function:
+
+```python
+    def forward(self, n=1):
+        (x, y) = self.position
+        (dx, dy) = delta(self.angle)
+        self.position = (x + dx*n, y + dy*n)
+```
+
+Your code should now match the following.
+
+```python
+import math
+
+def deg2rad(n):
+    return math.pi * n / 180.0
+
+def delta(theta):
+    return (math.cos(theta), -math.sin(theta))
+
+class TurtleState:
+    def __init__(self):
+        self.position = (50.0, 50.0)
+        self.angle = deg2rad(0)
+
+    def __repr__(self):
+        (x, y) = self.position
+        return 'TurtleState(({}, {}), {})'.format(x, y, self.angle)
+
+    def forward(self, n=1):
+        (x, y) = self.position
+        (dx, dy) = delta(self.angle)
+        self.position = (x+dx*n, y+dy*n)
+
+    def turn(self, amount=deg2rad(90)):
+        self.angle += amount
+
+    left = turn
+
+    def right(self, amount=deg2rad(90)):
+        self.turn(-amount)
+```
+
+Let's try it interactively to make sure everything still works.
+
+```python
+>>> from state import *
+>>> t = TurtleState()
+>>> t
+TurtleState((50.0, 50.0), 0.0)
+>>> t.forward()
+>>> t
+TurtleState((51.0, 50.0), 0.0)
+>>> t.left()
+>>> t
+TurtleState((51.0, 50.0), 1.57079632679)
+>>> t.forward()
+>>> t
+TurtleState((51.0, 49.0), 1.57079632679)
+```
+
+This is now a much simpler interface for controlling our turtle.
+
+### <a name="using2"></a>5.6&nbsp;&nbsp;&nbsp;Revisiting Drawing
+
+The turtle looks nicer, but we need it to draw again. Let's remind ourselves of our ideal interface. We would like to do the following and have the results appear on screen:
+
+```python
+    t.forward(10)
+    t.left()
+    t.forward(20)
+```
+
+In the interactive prompt we can try out our new `TurtleState` class and use it to draw.  First, let's set up things.
+
+```python
+>>> from state import *
+>>> from graphics import *
+>>> win = GraphWin()
+>>> t = TurtleState()
+```
+
+Now, we'll need to remember our previous position before moving (so we can draw lines)
+
+```python
+>>> last_pos = t.position
+>>> t.forward(10)
+```
+
+Now we draw a line:
+
+```python
+>>> Line(Point(last_pos[0], last_pos[1]), Point(t.position[0], t.position[1])).draw(win)
+Line(Point(50.0, 50.0), Point(60.0, 50.0))
+```
+
+Left's turn left, move forward again, and draw another line.
+
+```python
+>>> t.left()
+>>> last_pos = t.position
+>>> t.forward(20)
+>>> Line(Point(last_pos[0], last_pos[1]), Point(t.position[0], t.position[1])).draw(win)
+Line(Point(60.0, 50.0), Point(60.0, 30.0))
+```
+
+We should see our backwards "L" shape again. Our pattern should be clear: in order to have our turtle draw lines, we'll have to keep track of our previous position. Whenever we move forward, we need to draw a line. Turning has no impact on this position tracking since that doesn't require drawing anything. With this, we'll create a `TurtlrDraw` class that internally contains a `TurtleState`.  Create a new file called `draw.py` with the following contents.
+
+```python
+#!/usr/bin/env python
+
+from state import *
+from graphics import *
+
+class TurtleDraw:
+    def __init__(self, win):
+        self.state = TurtleState()
+        self.win = win
+
+    def draw_line(self, (x1, y1), (x2, y2)):
+        Line(Point(x1, y1), Point(x2, y2)).draw(self.win)
+```
+
+So, a `TurtleDraw` object has a state (which is an instance of `TurtleState`) and a `GraphWin` window instance.  Drawing a line was a little painful, so we wrote a method to wrap that.
+
+The steps to move forwared are 1) remember our current position, 2) move forward in our `TurtleState` instance, and then 3) draw a line from our previous position and our current position. So, let's implement that (remembering that we pass an argument `n` to say how many units to move in our direction - the default is 1).
+
+```python
+    def forward(self, n=1):
+        last_pos = self.state.position
+        self.state.forward(n)
+        self.draw_line(last_pos,
+                       self.state.position)
+
+```
+
+What we have done is we've separated the responsibility of drawing from the responsibility of maintaining the turtle state. For the things that require managing the turtle state, we just delegate them to our contained `state` object.
+
+Let's try it interactively.
+
+```python
+>>> from draw import *
+>>> win = GraphWin()
+>>> t = TurtleDraw(win)
+>>> t.forward(10)
+```
+
+You should see a small line was drawn. Exciting! We're almost there.
+
+Since turning only modifies the state and has no impact on the drawing, the implementation of `left` and `right` just pass through to the `state` object. Let's make a decision here that drawing routines will alway use degrees instead of radians. We'll convert to radians before we pass the call to the `state` object.
+
+```python
+    def left(self, amount=90):
+        self.state.left(deg2rad(amount))
+
+    def right(self, amount=90):
+        self.state.right(deg2rad(amount))
+```
+
+Test that the turn logic works:
+
+```python
+>>> from draw import *
+>>> win = GraphWin()
+>>> t = TurtleDraw(win)
+>>> t.forward(10)
+>>> t.left()
+>>> t.forward(20)
+```
+
+Done! We now have the beginnings of a usable turtle graphics system. Your completed `draw.py` should match the following.
+
+```python
+from state import *
+from graphics import *
+
+class TurtleDraw:
+    def __init__(self, win):
+        self.state = TurtleState()
+        self.win = win
+
+    def draw_line(self, (x1, y1), (x2, y2)):
+        Line(Point(x1, y1), Point(x2, y2)).draw(self.win)
+
+    def forward(self, n=1):
+        last_pos = self.state.position
+        self.state.forward(n)
+        self.draw_line(last_post,
+                       self.state.position)
+
+    def right(self, amount=90):
+        self.state.right(deg2rad(amount))
+
+    def left(self, amount=90):
+        self.state.left(deg2rad(amount))
+```
+
+Let's put it to use. Create a file called `test.py` in the same directory as `draw.py` and `state.py`, and fill it with the following contents.
+
+```python
+#!/usr/bin/env python
+
+import draw
+from graphics import *
+
+def draw_star(win):
+    # Instantiate our `TurtleDraw` class
+    t = draw.TurtleDraw(win)
+
+    for i in range(36):
+        t.forward(60)
+        t.left(170)
+
+def main():
+    # Create our window
+    win = GraphWin("Turtle")
+
+    draw_star(win)
+
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
+
+Running it should produce an image matching the following.
+
+![A star drawn with turtle graphics](images/turtle.png)
+
+From here, there are a lot of things that can be done. That will form the basis of the exercises for this section.
+
+**Python exercises:**
+
+* The turtle is defaulted to position `(50, 50)` in `TurtleState` (in `state.py`). Make the start position a parameter to `TurtleState`. Inside the `__init__` method of `TurtleDraw`, use `win.width` and `win.height` to find the center of the screen. Use this initialize `TurtleState` in the center of the screen.
+* Add `goto` method to directly set the location of the turtle.
+* Add a `backwards` method to allow the turtle to move backwards.
+* Add a method called `pencolor` which changes the current color. It should remember the color until the next time you use `pencolor` to apply a new color.
+* Add methods `penup` and `pendown` which respectively disable and re-enable drawing when moving `forward` or `backward`.
+* Add a `pensize` method which sets the line width to use when drawing lines. (Hint: if `line` is a `Line` instance, you can set `line.width = new_width` before calling `line.draw(win)`.)
+* Refactor all the drawing state (pen size, pen up/down, pen color) into a separate class called `DrawState` (similar to `TurtleState`).
