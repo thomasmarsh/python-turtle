@@ -2582,8 +2582,11 @@ From here, there are a lot of things that can be done. That will form the basis 
 
 * The turtle is defaulted to position `(50, 50)` in `TurtleState` (in `state.py`). Make the start position a parameter to `TurtleState`. Inside the `__init__` method of `TurtleDraw`, use `win.width` and `win.height` to find the center of the screen. Use this initialize `TurtleState` in the center of the screen.
 * Add `goto` method to directly set the location of the turtle.
+* Formalize our turtle implementation so that it consistent with convention: the origin (0,0) should be at the center of the screen, and the y-axis should not be inverted.
 * Add a `backwards` method to allow the turtle to move backwards.
 * Add a method called `pencolor` which changes the current color. It should remember the color until the next time you use `pencolor` to apply a new color.
 * Add methods `penup` and `pendown` which respectively disable and re-enable drawing when moving `forward` or `backward`.
-* Add a `pensize` method which sets the line width to use when drawing lines. (Hint: if `line` is a `Line` instance, you can set `line.width = new_width` before calling `line.draw(win)`.)
+* Add a `pensize` method which sets the line width to use when drawing lines. (Hint: if `line` is a `Line` instance, you can set `line.setWidth(new_width)` before calling `line.draw(win)`.)
 * Refactor all the drawing state (pen size, pen up/down, pen color) into a separate class called `DrawState` (similar to `TurtleState`).
+* Add a `__repr__` method to `DrawState`. Add a `__repr__` method to `TurtleDraw` which relies on `TurtleState` and `DrawState`.
+* Our turtle is missing a visual turtle on screen. A simple way to do this would be to draw an isoceles triangle pointing at the current heading and use the `move` method to translate it as the turtle moves.
