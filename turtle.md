@@ -2059,9 +2059,9 @@ We an see that both have an "attribute" called `number`. An attribute is often a
 
 > _Why all this terminology confusion? Method vs. member function? Attribute vs. instance variable vs member variable?_
 >
-> Object oriented programming has a rich history, and many concepts were developed simultaneously in multiple languages. You can view a [taxonomy of programming languages](http://www.digibarn.com/collections/posters/tongues/ComputerLanguagesChart.png) to get an idea of some of the diversity and history of the thousands of languages.
+> Object oriented programming has a rich history, and many concepts were developed simultaneously in multiple languages. You can view a [taxonomy of programming languages](http://www.digibarn.com/collections/posters/tongues/ComputerLanguagesChart.png) to get an idea of some of the diversity and history of programming languages. (The estimated number of programming languages in existence ranges in the thousands.)
 >
-> [Simula](https://en.wikipedia.org/wiki/Simula) introduced the concept of objects and classes in 1962. When other languages came along, they introduce new concepts, or existing concepts were reinvented. Formal methodologies for design and architecture also came along, sometimes inventing new terms. The unfortunate situation is that we now use two or more terms interchangeably for the same things. Further complicating matters is that some terms are more correct when discussing certain languages over others.
+> [Simula](https://en.wikipedia.org/wiki/Simula) introduced the concept of objects and classes in 1962. When other languages came along, they introduce new concepts, or existing ideas were reinvented simultaneously. Formal methodologies for object-oriented design and architecture also came along, sometimes inventing new terms. The unfortunate situation is that we now use two or more terms interchangeably for the same things. Further complicating matters is that some terms are more correct over others when discussing certain languages, but is expected that programmers will seamlessly code-switch.
 
 Through the use of instance variables, classes allow you to encapsulate state within an object. We'll make our own version of `Point` from `graphics.py`. Ours, however, won't be able to draw to screen. Create a new file called `geometry.py` with the following contents:
 
@@ -2339,7 +2339,7 @@ The simplest of our functions to turn into a method is `turn` (which is synonymo
 > If you haven't come across this before, `+=` is convenient shorthand. `x += y` is the same as `x = x + y`. This is really useful when dealing with long names or deep nesting of classes (for example, `long_var_name.long_property_name.x += 1` is much shorter than the original). Other operators can use this syntax too, including `-=`, `*=`, `/=`, `%=` (modulo), and more esoteric operators too.
 
 Just like with our previous `left` function, we can also just assign the `turn` to `left` like a variable within te class body, and the implementation of `right` is straightforward, calling `self.turn` with a negated angle.
-j
+
 ```python
     left = turn
 
@@ -2443,7 +2443,7 @@ Now we draw a line:
 Line(Point(50.0, 50.0), Point(60.0, 50.0))
 ```
 
-Left's turn left, move forward again, and draw another line.
+Let's turn left, move forward again, and draw another line.
 
 ```python
 >>> t.left()
