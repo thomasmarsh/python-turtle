@@ -1483,6 +1483,8 @@ Using our list format, now our initial state can be described as `[(50, 50), deg
 
 Moving the turtle forward requires a trigonometric review. Given an angle, we want to know how to move the turtle one unit in that direction from its current point. Consider the [unit circle](https://en.wikipedia.org/wiki/Unit_circle), which is just a circle with radius 1 centered at (0,0). If (x,y) is a coordinate on the circle's perimeter, and θ (theta, not zero) is an angle, then cos(θ) = x and sin(θ) = y.
 
+![Unit circle](images/unit_circle.png)
+
 In our world, the unit of measures is pixels, so moving in one unit means moving one pixel. Let's try some interactive math in Python to validate our understanding with a θ value of 0π (0˚, or "right").
 
 ```python

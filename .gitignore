@@ -1,1 +1,11 @@
 work/*
+.DS_Store
+figures/*.aux
+figures/*.log
+	cos_sin_theta.aux
+	cos_sin_theta.log
+	cos_sin_theta.png
+	unit_circle.aux
+	unit_circle.log
+	unit_circle.png
+	../images/unit_circle.png
