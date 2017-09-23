@@ -1,19 +1,18 @@
-SRCS = unit_circle.tex
+SRCS = unit_circle.tex \
+	   segment.tex \
+	   lerp.tex
 
 PDFS = $(SRCS:.tex=.pdf)
-
-PNGS = $(SRCS:.tex=.png)
+PNGS = $(SRCS:%.tex=../images/%.png)
 
 all: $(PNGS)
 
 clean:
-	$(RM) $(PDFS) $(PNGS)
+	$(RM) $(PDFS)
 	$(RM) *.aux *.log *.dvi
 
 %.pdf: %.tex
 	pdflatex $<
 
-%.png: %.pdf
+$(PNGS): ../images/%.png: %.pdf
 	convert -density 300 -quality 90 -resize '50%' $< $@
-	mv $@ ../images/
-	$(MAKE) clean

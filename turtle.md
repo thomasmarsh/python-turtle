@@ -748,21 +748,20 @@ Let's start with a simple goal of drawing a gradient, a smooth blend, from one c
 
 Let's draw our gradient from left to right, so we'll have red on the left and blue on the right. We'll draw it as a series of tall, skinny rectangles of varying color. At the left, we'll be 100% red and 0% blue. The inverse will hold true at the right, and at the midpoint we'll be 50%/50%. So, this translates to a fairly straightforward way to apply our gradient. For a given color, and a percentage amount (`0.0` to `1.0`) we can scale the amount of the contribution from the two sides. For our example, we will set the left-hand of the window as the 0% side and the right as the 100% side.
 
-This will hopefully become clearer with some code. We'll call the progress from left to right `t`. For a test, we'll just use numbers instead of the RGB triples.
+We'll break our problem down even further and focus on only one channel. We are, in effect, trying to find a point on a 1D line. Let's take an example where our starting point `a` is 10 and our end point `b` is 20.
 
-```python
->>> t = 0.0
->>> a = 10.0
->>> b = 20.0
-```
+![Line segment](images/segment.png)
 
-When `t` is 0, we want the contribution from `b` to be 0%. That's easy, we can just multiply `b` times `t`. That also covers the contribution from `b` in the case that `t` is 100% too (`1.0 * b == b`). So we now know that term. The term for the contribution from `a` is actually just `1.0 - t`. Let's try this for various amounts.
+We know that the midpoint is just the mean of `a` and `b`, and can be written `(a+b)/2`. Since we're interested in arbitrary points between `a` and `b`, let's rewrite this clearly as percentages. The expression `0.5*a + 0.5*b` has the same meaning, giving a 50% contribution from `a` and a 50% contribution from `b`. With this new formulation, we're going to try to reach an arbitrary percentage ratio `t` between the two points.
 
+We know that our total contribution from both elements must be 100%, so, if `t` is a percentage, then `(1-t)` is the remainder of the contribution. The sum of `t` and `(1-t)` equals `1.0`.
+
+Let's try this for various amounts.
 
 ```python
 >>> t = 0.0
 >>> ((1-t)*a, t*b)
->>> (10.0, 0.0)
+(10.0, 0.0)
 ```
 
 That's correct 100% for `a` and 0% for `b`. The inverse case works too.
@@ -770,18 +769,30 @@ That's correct 100% for `a` and 0% for `b`. The inverse case works too.
 ```python
 >>> t = 1.0
 >>> ((1-t)*a, t*b)
->>> (0.0, 20.0)
+(0.0, 20.0)
 ```
 
-And finally, the midpoint at 50%:
+The midpoint can be found by looking at the 50% point and adding the two contributions together. 
 
 ```python
 >>> t = 0.5
 >>> ((1-t)*a, t*b)
->>> (5.0, 10.0)
+(5.0, 10.0)
+>>> (1-t)*a + t*b
+15.0
 ```
 
-If we add these up, that is `15`, exactly the midpoint between our `a` and `b`.
+If we add these up, that is `15`, exactly the midpoint between our `a` and `b`.  An arbitrary ratio point on the segment also gives the correct result.
+
+```python
+>>> t = 0.78
+>>> a = 10
+>>> b = 20
+>>> ((1-t)*a, t*b)
+(2.1999999999999997, 15.600000000000001)
+>>> (1-t)*a + t*b
+17.8
+```
 
 This is referred to as [linear interpolation](https://en.wikipedia.org/wiki/Linear_interpolation), and commonly shortened to "lerp" in computing. We can trivially define a lerp function in Python.
 
@@ -797,7 +808,19 @@ This is referred to as [linear interpolation](https://en.wikipedia.org/wiki/Line
 15.0
 ```
 
-For our gradient, we want to lerp between RGB values. So we'll use this `lerp` function function to build a way to interpolate between two colors:
+Performing a lerp with more than one component at a time is simply a matter of lerping each of the components separately. If we had a point `A` called `(ax, ay)` in 2D space, and we want to lerp to point `B` called `(bx, by)`, our new coordinate would be the the interpolated `x` component and and the interpolated `y`.
+
+![An interpolation between two 2D points](images/lerp.png)
+
+```python
+>>> (ax, ay) = (1, 2)
+>>> (bx, by) = (3, 5)
+>>> t = 0.25
+>>> (lerp(ax, bx, t), lerp(ay, by, t))
+(1.5, 2.75)
+```
+
+For our gradient, we want to lerp between RGB values, which is a 3-dimension vector. So we'll use this `lerp` function function to build a way to interpolate between two colors:
 
 ```python
 def lerp(a, b, t):
@@ -2592,3 +2615,31 @@ From here, there are a lot of things that can be done. That will form the basis 
 * Refactor all the drawing state (pen size, pen up/down, pen color) into a separate class called `DrawState` (similar to `TurtleState`).
 * Add a `__repr__` method to `DrawState`. Add a `__repr__` method to `TurtleDraw` which relies on `TurtleState` and `DrawState`.
 * Our turtle is missing a visual turtle on screen. A simple way to do this would be to draw an isoceles triangle pointing at the current heading and use the `move` method to translate it as the turtle moves.
+* Try creating two turtles at the same time and make them both draw simultaneously.
+
+* 5&nbsp;&nbsp;&nbsp;[L-Systems](#lsys)
+
+Turtle graphics are surprisingly powerful tool for creating computer graphics. In this section, we'll learn how they can be used as a foundational tool to build complex diagrams.
+
+L-systems, named after Aristid Lindenmeyer, were used by their creator to describe natural systems like plants and their growth. An L-system uses a simple grammar to describe instructions for a turtle to follow.
+
+For example, in place of
+
+```python
+    t.forward()
+    t.left()
+    t.forward()
+    t.right()
+    t.forward()
+```
+
+we would instead write a simple set of instructions:
+
+```
+    F+F-F
+```
+
+where `F` means to move forward, `+` means to turn left, and `-` to turn right. Not only is this format very concise, it lends itself to higher level manipulation. With the addition of a few more instructions , it It is a miniature programming language for turtles.
+
+
+

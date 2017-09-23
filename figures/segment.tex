@@ -1,0 +1,26 @@
+\documentclass{standalone}
+
+\usepackage[utf8]{inputenc}
+\usepackage{tikz,fp,siunitx}
+\usetikzlibrary{decorations.pathreplacing}
+
+\begin{document}
+\begin{tikzpicture}[scale=1,cap=round]
+
+   % Axis line
+   \draw[<->,thick] (-0.5,0) -- (6.0,0);
+   
+   % Axis strokes
+   \foreach \x in {0,5,...,25}
+       \draw (\x/5,-0.15) -- (\x/5,0.15) node[above] {\x};
+   
+   % Line segment
+   \draw plot [mark=*, mark size=2] coordinates{(4,0)};
+   \draw plot [mark=*, mark size=2] coordinates{(2,0)};
+   \draw[line width=1.5] (2,0) -- (4,0);
+   
+   %\draw plot [green,mark=*, mark size=2] coordinates{(3,0)};
+   
+\end{tikzpicture}
+
+\end{document}
