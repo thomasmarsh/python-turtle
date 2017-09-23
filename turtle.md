@@ -74,6 +74,8 @@ will enable us to start getting interesting results sooner, but also familiarize
 	* 6.2&nbsp;&nbsp;&nbsp;[String Rewriting](#interp)
 	* 6.3&nbsp;&nbsp;&nbsp;[Grammar](#grammar)
 	* 6.4&nbsp;&nbsp;&nbsp;[Iterative Application](#iterate)
+	* 6.5&nbsp;&nbsp;&nbsp;[Branching Structures](#branch)
+		* 6.5.1&nbsp;&nbsp;&nbsp;[Pen State](#pen)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -3059,3 +3061,125 @@ The image that is drawn should match the following.
 **Python exerises:**
 * If you draw the Koch Island with `3` as the `rewrite` parameter, you'll notice it goes off the edge of the screen. We can fix this by setting a smaller `step_size`. Can you find a relationship between `n` (the number of rewrites) and the `step_size` such that the image always fits on screen?
 
+**Python exercise:**
+* Add an L-system to `examples.py` in the same form as the `Fibonacci` and KochIsland examples. Call it `QuadraticSnowflake`, with an axiom of `-F` one rule mapping `F` to `F+F-F-F+F`
+
+### <a name="branch"></a>6.5&nbsp;&nbsp;&nbsp;Branching Structures
+
+Our L-system engine can already draw a variety of interesting forms. It has the limitation that any shape must be a continuous line. We're going to introduce the notion of branching structures. To do so, we need to revisit our `TurtleDraw` and `TurtleState` classes to add some functionality.
+
+#### <a name="pen"></a>6.5.1&nbsp;&nbsp;&nbsp;Pen State
+
+One simple way to add breaks in the line patterns is to support moving forward without drawing the corresponding line. The concept already exists in turtle graphics roots in the Logo programming language in the form of [pen commands](http://derrel.net/ep/logo/logo_com.htm#pen). Logo supports a "pen up" and a "pen down" (`pu` and `pd` respectively in Logo) command which suspends or restores drawing.
+
+So, let's add the methods `penup`, `pendown`, and, while we're at it, we'll add `set_color` and `pensize` methods.  In `draw.py`, add the following class.
+
+```python
+class PenState:
+    def __init__(self):
+        self.is_down = True
+        self.width = 1
+        self.color = '#000000'
+```
+
+This class keeps track of whether the pen is currently down, the width of the current line, and the current draw color. In the `__init__` method of `TurtleDraw`, we need to add the line:
+
+```python
+        self.pen = PenState()
+```
+
+With this we now have a way of tracking our current drawing state. We'll modify `draw_line` in `TurtleDraw` to pay attention to this state:
+
+```python
+    def draw_line(self, (x1, y1), (x2, y2)):
+        if self.pen.is_down:
+            line = Line(Point(x1, y1), Point(x2, y2))
+            line.setFill(self.pen.color)
+            line.setWidth(self.pen.width)
+            line.draw(self.win)
+```
+
+Notice that `draw_line` might get called, but if `self.pen.is_down` is `False`, then it won't actually do anything. Inside the `if` block we use `self.pen.color` and `self.pen.width`, which have defaults which are the same as what we've been drawing before. The methods to modify the pen state are trival:
+
+```python
+    def pensize(self, width):
+        self.pen.width = width
+
+    def penup(self):
+        self.pen.is_down = False
+
+    def pendown(self):
+        self.pen.is_down = True
+
+    def set_color(self, r, g, b):
+        self.pen.color = '#{:02x}{:02x}{:02x}'.format(r, g, b)
+```
+
+To test the color and width attributes, we can modify the `draw_lsys` function in `test.py` to the following:
+
+```python
+def draw_lsys(win):
+    t = TurtleDraw(win)
+    t.pensize(3)
+    t.set_color(255, 128, 0)
+
+    lsys = LSys(t, KochIsland)
+    lsys.rewrite(2)
+    print 'Program:', lsys.prog
+    lsys.run()
+```
+
+The result should be an orange Koch island with a thick jagged orange line just like the following image.
+
+![Example of pen state](images/pen.png)
+
+For the next step, we're going to change the semantics of our L-system symbol interpretation. Until now we've said that `F` means forward. Let's say that `F` means forward _and draw_, while a lowercase `f` means forward _without drawing_. What's more, we'll say that any uppercase letter will draw, and any lowercase letter will not. This will allow us to use a larger alphabet.
+
+All we need to do to move forward without drawing is call `penup`, `forward` and `pendown` in sequence.
+
+Modify the `run` method of `LSys` in `lsys.py` to match the following.
+
+```python
+    def run(self):
+        for cmd in self.prog:
+            if cmd.isupper():
+                self.turtle.forward(self.step_size)
+            elif cmd.islower():
+                self.turtle.penup()
+                self.turtle.forward(self.step_size)
+                self.turtle.pendown()
+            elif cmd == '+':
+                self.turtle.left()
+            elif cmd == '-':
+                self.turtle.right()
+            else:
+                print 'did not understand:', cmd
+```
+
+To test this, we need an L-system that has lowercase letters. Add the following to `examples.py`.
+
+```python
+class IslandsAndLakes:
+    axiom = 'F+F+F+F'
+    rules = {
+        'F': 'F+f-FF+F+FF+Ff+FF+f+FF-F-FF-Ff-FFF',
+        'f': 'ffffff'
+    }
+```
+
+We also need to modify the `draw_lsys` function in `test.py`. Change it so that the contents match the following.
+
+```python
+def draw_lsys(win):
+    t = TurtleDraw(win)
+    t.state.position = (64, 128)
+    lsys = LSys(t, IslandsAndLakes)
+    lsys.rewrite(2)
+    lsys.step_size = 2
+    print 'Program:', lsys.prog
+    lsys.run()
+```
+
+You should see a drawing that matches the one below.
+
+![Islands and Lakes fractal](images/islands.png)
