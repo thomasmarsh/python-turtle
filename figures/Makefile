@@ -1,11 +1,11 @@
-SRCS = unit_circle.tex \
+TEX = unit_circle.tex \
 	   segment.tex \
 	   lerp.tex
 
-PDFS = $(SRCS:.tex=.pdf)
-PNGS = $(SRCS:%.tex=../images/%.png)
+PDFS = $(TEX:.tex=.pdf)
+PNGS = $(TEX:%.tex=../images/%.png)
 
-all: $(PNGS)
+all: $(PNGS) ../images/fib.png
 
 clean:
 	$(RM) $(PDFS)
@@ -13,6 +13,9 @@ clean:
 
 %.pdf: %.tex
 	pdflatex $<
+
+../images/fib.png: fib.py
+	python fib.py | dot -Tpng > $@
 
 $(PNGS): ../images/%.png: %.pdf
 	convert -density 300 -quality 90 -resize '50%' $< $@

@@ -69,6 +69,11 @@ will enable us to start getting interesting results sooner, but also familiarize
 		* 5.4.4&nbsp;&nbsp;&nbsp;[Adding Behavior](#methods)
 	* 5.5&nbsp;&nbsp;&nbsp;[Refactoring a Turtle](#turtle2)
 	* 5.6&nbsp;&nbsp;&nbsp;[Revisiting Drawing](#using2)
+* 6&nbsp;&nbsp;&nbsp;[L-Systems](#lsys)
+	* 6.1&nbsp;&nbsp;&nbsp;[Building an Interpreter](#interp)
+	* 6.2&nbsp;&nbsp;&nbsp;[String Rewriting](#interp)
+	* 6.3&nbsp;&nbsp;&nbsp;[Grammar](#grammar)
+	* 6.4&nbsp;&nbsp;&nbsp;[Iterative Application](#iterate)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -2617,11 +2622,9 @@ From here, there are a lot of things that can be done. That will form the basis 
 * Our turtle is missing a visual turtle on screen. A simple way to do this would be to draw an isoceles triangle pointing at the current heading and use the `move` method to translate it as the turtle moves.
 * Try creating two turtles at the same time and make them both draw simultaneously.
 
-* 5&nbsp;&nbsp;&nbsp;[L-Systems](#lsys)
+## <a name="lsys"></a>6&nbsp;&nbsp;&nbsp;L-Systems
 
-Turtle graphics are surprisingly powerful tool for creating computer graphics. In this section, we'll learn how they can be used as a foundational tool to build complex diagrams.
-
-L-systems, named after Aristid Lindenmeyer, were used by their creator to describe natural systems like plants and their growth. An L-system uses a simple grammar to describe instructions for a turtle to follow.
+Turtle graphics are surprisingly powerful tool for creating computer graphics. We'll learn how they can be used as a foundational tool to build complex diagrams. L-systems, named after Aristid Lindenmeyer, were used by their creator to describe natural systems like plants and their growth. An L-system uses a simple grammar to describe instructions for a turtle to follow.
 
 For example, in place of
 
@@ -2633,13 +2636,426 @@ For example, in place of
     t.forward()
 ```
 
-we would instead write a simple set of instructions:
+we would instead write the equivalent instructions:
 
 ```
     F+F-F
 ```
 
-where `F` means to move forward, `+` means to turn left, and `-` to turn right. Not only is this format very concise, it lends itself to higher level manipulation. With the addition of a few more instructions , it It is a miniature programming language for turtles.
+Here, `F` means to move forward, `+` means to turn left, and `-` to turn right. Not only is this format very concise, it lends itself to higher level manipulation. It can be thought of as a miniature programming language for turtles. We'll add a few more operations to this language to make it even more useful.
 
+### <a name="interp"></a>6.1&nbsp;&nbsp;&nbsp;Building an Interpreter
 
+It is a straightforward exercise to take a string expressing an L-system program and convert it to an action.
+
+```python
+    win = GraphWin()
+    t = TurtleDraw(win)
+
+    # A simple turtle program
+    prog = 'FFFF-FFFF-FFFF'
+
+    for cmd in prog:
+        if cmd == 'F':
+            t.forward()
+
+        elif cmd == '+':
+            t.left()
+
+        elif cmd == '-':
+            t.right()
+```
+
+Simply looping through each character in the string is enough to translate each command into the corresponding effect on the turtle.
+
+> _If `F`, `+`, and `-` alter the turtle a fixed amount, how do we specify different amounts to move or turn?_
+>
+> There is a parametric version of L-systems which take an argument for each command. These appear similarly to how you would call a function in Python. For example, the following python code:
+>
+> ```
+>     t.forward(5)
+>     t.left(30)
+>     t.forward(10)
+>     t.right(15)
+> ```
+>
+> would be implemented in a parametric L-system as:
+>
+> ```
+>     F(5)+(30)F(10)-(15)
+> ```
+>
+> This extension to L-systems even allows variables and mathematical expressions to be passed as arguments. Parametric L-systems are very powerful, but are much more complex to implement. (Think, for example, about the changes we would need to make to our interpreter.) Therefore, we will not be utilizing parametric system in this tutorial.
+
+Let's create a new work area. Create a directory called `lsys` and copy `graphics.py` and your turtle graphics code to this new directory.
+
+```shell
+$ cd ~/turtle-tutorial
+$ mkdir lsys
+$ cp graphics.py ./lsys/
+$ cp turtle/draw.py turtle/state.py ./lsys/
+```
+
+Now, in the `lsys` directory, add a new file called `lsys.py` with the following contents.
+
+```python
+class LSys:
+    def __init__(self, turtle, prog):
+        self.prog = prog
+        self.turtle = turtle
+
+    def run(self):
+        for cmd in self.prog:
+            if cmd == 'F':
+                self.turtle.forward()
+            elif cmd == '+':
+                self.turtle.left()
+            elif cmd == '-':
+                self.turtle.right()
+            else:
+                print 'did not understand:', cmd
+```
+
+And in a file called `test.py` in the same directory add the following code.
+
+```python
+from graphics import GraphWin
+from draw import TurtleDraw
+from lsys import LSys
+
+def main():
+    win = GraphWin()
+    t = TurtleDraw(win)
+    l = LSys(t, 'F-F-F-F')
+    l.run()
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
+
+If you run `test.py` you should see that a small square was drawn - however, it is so tiny that it is just four pixels.
+
+![Turtle commands executed through an interpreter](images/interp.png)
+
+This is a little small since our turtle is only moving one pixel at a time. Let's add a `step_size` attribute to our `LSys` class. It will scale the drawing by the that amount. In the `run`, method, the only change necessary is to pass this `step_size` to the call to `forward` on the turtle. After your change, the contents of `lsys.py` should match the following. We've decided to default `step_size` to a value of `4`.
+
+```python
+class LSys:
+    def __init__(self, turtle, prog):
+        self.prog = prog
+        self.turtle = turtle
+        self.step_size = 4
+
+    def run(self):
+        for cmd in self.prog:
+            if cmd == 'F':
+                self.turtle.forward(self.step_size)
+            elif cmd == '+':
+                self.turtle.left()
+            elif cmd == '-':
+                self.turtle.right()
+            else:
+                print 'did not understand:', cmd
+```
+
+Now if we run `test.py` again, we should see the square is larger this time.
+
+![Scaling our turtle commands by 4](images/interp_scale.png)
+
+### <a name="interp"></a>6.2&nbsp;&nbsp;&nbsp;String Rewriting
+
+The foundation of L-system is a simple set of rules which define transforming strings like `F-F-F-F`. These transformations are the based on rewriting the string based on some simple rules, where the rules can vary.
+
+Let's take the string `'A'`. We introduce a rule which says that every time we see the character `'A'`, we substitute it for the string `'AB'`. Let's try it in a file called `rewrite.py`
+
+```
+def rewrite(s):
+    result = []
+    for c in s:
+        if c == 'A':
+            result.append('AB')
+        else:
+            result.append(c)
+    return ''.join(result)
+
+def main():
+    print rewrite('A')
+    print rewrite('ABAB')
+
+if __name__ == '__main__': main()
+```
+
+Running it should produce the following output:
+
+```shell
+$ python rewrite.py
+A -> AB
+ABAB -> ABBABB
+```
+
+For efficiency, inside of `rewrite`, we use an intermediate list called `result` which we then `join` back into a string when we're done.
+
+> _What's so efficient about using a list and then calling `''.join(result)`?_
+>
+> A naïve implementation of `rewrite` would create a new string, and then just call `+=` to append the new value:
+>
+> ```python
+> def rewrite(s):
+>     result = ''
+>     for c in s:
+>         if c == 'A':
+>             result += 'AB'
+>         else:
+>             result += c
+>     return result
+> ```
+>
+> Although this is easier to read, it creates a new string for `result`, discarding the previous value of `result` each time. For long substitutions like we'll need for L-systems, this adds up quickly.
+>
+> By simply adding elements, instead, to a list, we're not saving an intermediate string in `result`. When all elements are in the list, we compute the result by joining them all together. We use `''`, the empty string as the basis for the `join` since we just want to concatenate all the strings together without interpolating a character between each entry.
+
+**Python exercise:**
+* Move the `rewrite` function to the `LSys` class in `lsys.py`. Make it a method of `LSys` that can rewrite `self.prog`.
+
+### <a name="grammar"></a>6.3&nbsp;&nbsp;&nbsp;Grammar
+
+What if we don't want to hardcode the translation rules inside of `rewrite`, but prefer to make them a parameter? A translation rule is just a map of a character to another string. In our case, our rule is `A -> AB`. We can pass this as a dictionary. Update `rewrite.py` to match the following:
+
+```python
+def rewrite(s, rules):
+    result = []
+    for c in s:
+        result.append(rules.get(c, c))
+    return ''.join(result)
+
+def main():
+    rules = {'A': 'AB'}
+    print 'A ->', rewrite('A', rules)
+    print 'ABAB ->', rewrite('ABAB', rules)
+
+if __name__ == '__main__': main()
+```
+
+Now we take two parameters. The first, `s`, is the string to rewrite. The second parameter, `rules` is a dictionary of rewrite rules. Inside `rewrite`, we access the `rules` dictionary with the form `rules.get(c, c)`. This means that we are requesting `rules[c]`, but if the key `c` is not in the dictionary, then we would like to return a default value (the second argument). The default value in our case is the same as our key
+
+Surprisingly, this version is shorter than our previous implementation. We can verify that it still works:
+
+```shell
+$ python rewrite.py
+A -> AB
+ABAB -> ABBABB
+```
+
+Let's add an additional rule, mapping any `'B'` back to `'A'`. In `main`, change the line where we assign `rules` to match the following:
+
+```python
+    rules = {
+        'A': 'AB',
+        'B': 'A'
+    }
+```
+
+Running with these new replacement rules gives us a different result.
+
+```shell
+$ python rewrite.py
+A -> AB
+ABAB -> ABAABA
+```
+
+These rules now constitute a "grammar". Specifically, this is called a string rewriting system, or a [semi-Thue system](https://en.wikipedia.org/wiki/Semi-Thue_system). The type of grammar we've implemented forms the heart of L-system.
+
+The formal definition of an L-sytems is defines some of these elements using slightly different terms. Formally the L-system has three components, an _alphabet_ (just "A" and "B" in our example), the _axiom_ (the starting point, in our case "A"), and the production rules (which we called `rules`).
+
+Let's capture a description of a complete L-system inside a container. We're going to use a `class` without any methods as this container. Place this is in a file called `examples.py`.
+
+```python
+class Fibonacci:
+    axiom = 'A'
+    rules = {
+        'A': 'AB',
+        'B': 'A'
+    }
+```
+
+We'll use this format from now on to describe any new systems. Let's examine how to use it by modifying `rewrite.py`.
+
+```python
+from examples import Fibonacci
+
+def rewrite(lsys, n):
+    axiom = lsys.axiom
+    for _ in xrange(n):
+        result = []
+        for c in axiom:
+            result.append(lsys.rules.get(c, c))
+        axiom = ''.join(result)
+    return axiom 
+
+def main():
+    print rewrite(Fibonacci, 7)
+
+if __name__ == '__main__': main()
+```
+
+**Python exercise:**
+* In a previous exercise, we moved `rewrite` to be a method of the `LSys` class. In this section we modified `rewrite` to accept arguments in a diferent format. Translate these changes to the `LSys` class.
+
+### <a name="iterate"></a>6.4&nbsp;&nbsp;&nbsp;Iterative Application
+
+Some interesting properties are readily apparent, even with our simple rules. For example, if we repeatedly apply our rules to the starting string `'A'`, a pattern emerges. Modify `rewrite.py` as follows:
+
+```python
+from examples import Fibonacci
+
+def rewrite(lsys, n):
+    axiom = lsys.axiom
+    for _ in xrange(n):
+        result = []
+        for c in axiom:
+            result.append(lsys.rules.get(c, c))
+        axiom = ''.join(result)
+    return axiom 
+
+def main():
+    for n in range(0, 10):
+        r = rewrite(Fibonacci, n)
+        print 'n =', n,
+        print 'length =', len(r),
+        print 'result =', r
+
+if __name__ == '__main__': main()
+```
+
+The program now repeatedly applies the rules to the string, using the result of the previous substitutions to feed the next pass of rewriting. If it is unclear how this works, try adding some `print` statements inside of `rewrite` to inspect the process.
+
+Running this program result in the following output.
+
+```
+$ python rewrite.py
+n = 0 length = 1 result = A
+n = 1 length = 2 result = AB
+n = 2 length = 3 result = ABA
+n = 3 length = 5 result = ABAAB
+n = 4 length = 8 result = ABAABABA
+n = 5 length = 13 result = ABAABABAABAAB
+n = 6 length = 21 result = ABAABABAABAABABAABABA
+n = 7 length = 34 result = ABAABABAABAABABAABABAABAABABAABAAB
+```
+
+You can see relationship between iterations more clearly in the following image.
+
+![Fibonacci growth from simple pattern](images/fib.png)
+
+We can see that we get repeated sequences. But perhaps just as interesting is to look at the the length of the result, 1, 2, 3, 5, 8, 13, 21, 34, etc. It is growing exponentially, and the sequence of lengths should look familiar. This is the Fibonacci sequence and the exponential growth rate is equal to the golden ratio. Our simple `A -> AB; B -> A` rule set already encompasses some surprising complexity.
+
+If you try to calculate `rewrite` for a larger value of `n`, you'll see it takes a longer and longer amount of time to calculate. Be careful: values larger than 30 can consume a large amount of memory and make your system unresponsive.
+
+Returning to our box example, `F-F-F-F`, let's apply a simple subtitution. For example, every time we see `F`, let's replace it with something else, but this time we'll make it a little more complicated. We need to make modifications to several files.
+
+Add the following to `examples.py`:
+
+```python
+class KochIsland:
+    axiom = 'F-F-F-F'
+    rules = {
+        'F': 'F-F+F+FF-F-F+F'
+    }
+```
+
+You can see that the axiom here is our original box.
+
+> _What is a Koch Island_?
+>
+> [Helge von Koch](https://en.wikipedia.org/wiki/Helge_von_Koch) was a mathematician who provided one of the ealiest descriptions of a [fractal](https://en.wikipedia.org/wiki/Fractal). The [Koch snowflake](https://en.wikipedia.org/wiki/Koch_snowflake) was the original fractal he introduced in 1904. The Koch Island we use in our example here is similar, but can be produced with 90˚ angles.
+
+Now we'll modify `lsys.py` to use this new structure. (This was the work from the previous exercises. If you've done it already, you may need to make some changes if it doesn't match this implementation.)
+
+```python
+class LSys:
+    def __init__(self, turtle, lsys):
+        self.lsys = lsys
+        self.prog = lsys.axiom
+        self.turtle = turtle
+        self.step_size = 4
+
+    def rewrite(self, n):
+        axiom = self.lsys.axiom
+        for _ in xrange(n):
+            result = []
+            for c in axiom:
+                result.append(self.lsys.rules.get(c, c))
+            axiom = ''.join(result)
+        self.prog = axiom
+
+    def run(self):
+        for cmd in self.prog:
+            if cmd == 'F':
+                self.turtle.forward(self.step_size)
+            elif cmd == '+':
+                self.turtle.left()
+            elif cmd == '-':
+                self.turtle.right()
+            else:
+                print 'did not understand:', cmd
+```
+
+Now we'll rewrite `test.py` to use these new formats. Modify it so that it matches the following.
+
+```python
+from graphics import GraphWin
+from draw import TurtleDraw
+from lsys import LSys
+
+from examples import *
+
+def draw_lsys(win):
+    t = TurtleDraw(win)
+    lsys = LSys(t, KochIsland)
+    lsys.rewrite(0)
+    print 'Program:', lsys.prog
+    lsys.run()
+
+def main():
+    win = GraphWin('', 200, 200)
+    draw_lsys(win)
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
+
+Running this results in our original square. You should also see the following output on the console, showing the instructions the turtle followed:
+
+```
+Program: F-F-F-F
+```
+
+Consider, now, the following line:
+
+```python
+    lsys.rewrite(0)
+```
+
+Let's increment this to `1`, so we'll rewrite the string once using our `rewrite` method.
+
+Now we should see a much longer string. Only one substitution had quite an effect. If you run it again with the parameter `2`, you'll see the following program was generated:
+
+```
+Program: F-F+F+FF-F-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F+F-F+F+FF-F-F+FF-F+F+F
+F-F-F+F-F-F+F+FF-F-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F-F-F+F+FF-F-F+F-F-F+F+F
+F-F-F+F+F-F+F+FF-F-F+F+F-F+F+FF-F-F+FF-F+F+FF-F-F+F-F-F+F+FF-F-F+F-F-F+F+FF
+-F-F+F+F-F+F+FF-F-F+F-F-F+F+FF-F-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F+F-F+F+FF
+-F-F+FF-F+F+FF-F-F+F-F-F+F+FF-F-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F-F-F+F+FF-
+F-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F+F-F+F+FF-F-F+FF-F+F+FF-F-F+F-F-F+F+FF-F
+-F+F-F-F+F+FF-F-F+F+F-F+F+FF-F-F+F
+```
+
+The image that is drawn should match the following.
+
+![Koch Island at n = 2](images/koch_island.png)
+
+**Python exerises:**
+* If you draw the Koch Island with `3` as the `rewrite` parameter, you'll notice it goes off the edge of the screen. We can fix this by setting a smaller `step_size`. Can you find a relationship between `n` (the number of rewrites) and the `step_size` such that the image always fits on screen?
 
