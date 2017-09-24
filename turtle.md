@@ -76,6 +76,7 @@ will enable us to start getting interesting results sooner, but also familiarize
 	* 6.4&nbsp;&nbsp;&nbsp;[Iterative Application](#iterate)
 	* 6.5&nbsp;&nbsp;&nbsp;[Branching Structures](#branch)
 		* 6.5.1&nbsp;&nbsp;&nbsp;[Pen State](#pen)
+		* 6.5.2&nbsp;&nbsp;&nbsp;[Stack](#pen)
 
 ## <a name="dir"></a>1&nbsp;&nbsp;&nbsp;Project Directory
 The first step is to create a working directory in which we will perform all the steps in this tutorial. Let's call this `turtle-tutorial`. For example, we can use the following commands from the terminal.
@@ -2626,7 +2627,7 @@ From here, there are a lot of things that can be done. That will form the basis 
 
 ## <a name="lsys"></a>6&nbsp;&nbsp;&nbsp;L-Systems
 
-Turtle graphics are surprisingly powerful tool for creating computer graphics. We'll learn how they can be used as a foundational tool to build complex diagrams. L-systems, named after Aristid Lindenmeyer, were used by their creator to describe natural systems like plants and their growth. An L-system uses a simple grammar to describe instructions for a turtle to follow.
+Turtle graphics are a surprisingly powerful tool for creating computer graphics. We'll learn how they can be used as a foundational tool to build complex diagrams. L-systems, named after Aristid Lindenmeyer, were used by their creator to describe natural systems like plants and their growth. An L-system uses a simple grammar to describe instructions for a turtle to follow.
 
 For example, in place of
 
@@ -2767,7 +2768,7 @@ Now if we run `test.py` again, we should see the square is larger this time.
 
 ### <a name="interp"></a>6.2&nbsp;&nbsp;&nbsp;String Rewriting
 
-The foundation of L-system is a simple set of rules which define transforming strings like `F-F-F-F`. These transformations are the based on rewriting the string based on some simple rules, where the rules can vary.
+The foundation of L-system is a simple set of rules which define transforming strings like `F-F-F-F`. These transformations are the based on rewriting the string based on substitution patterns that are different for each L-system.
 
 Let's take the string `'A'`. We introduce a rule which says that every time we see the character `'A'`, we substitute it for the string `'AB'`. Let's try it in a file called `rewrite.py`
 
@@ -3060,9 +3061,7 @@ The image that is drawn should match the following.
 
 **Python exerises:**
 * If you draw the Koch Island with `3` as the `rewrite` parameter, you'll notice it goes off the edge of the screen. We can fix this by setting a smaller `step_size`. Can you find a relationship between `n` (the number of rewrites) and the `step_size` such that the image always fits on screen?
-
-**Python exercise:**
-* Add an L-system to `examples.py` in the same form as the `Fibonacci` and KochIsland examples. Call it `QuadraticSnowflake`, with an axiom of `-F` one rule mapping `F` to `F+F-F-F+F`
+* Add an L-system to `examples.py` in the same form as the `Fibonacci` and KochIsland examples. Call it `QuadraticSnowflake`, with an axiom of `'-F'` and a single rule mapping `'F'` to `'F+F-F-F+F'`. Use it in `test.py`.
 
 ### <a name="branch"></a>6.5&nbsp;&nbsp;&nbsp;Branching Structures
 
@@ -3183,3 +3182,191 @@ def draw_lsys(win):
 You should see a drawing that matches the one below.
 
 ![Islands and Lakes fractal](images/islands.png)
+
+
+#### <a name="pen"></a>6.5.2&nbsp;&nbsp;&nbsp;Stack
+
+In order to accommodate branching structures, we would like to add two more operations to our L-system language. These instructions are `[` (left bracket) and `]` (right bracket). The meaning of them is that `[` will save our current turtle state, including our position and angle. When we encounter the next `]`, that state should be restored. Where it gets interesting is that the brackets can be nested, allowing us to establish complex branching patterns.
+
+The behavior we're looking for is provided by a fundamental data structure called a [stack](https://en.wikipedia.org/wiki/Stack_(abstract_data_type)). In Python, the list data structure is sufficient to use as a stack. The key defining characteristics for us are that a stack holds a collection of elements and returns them in last-in-first-out (LIFO) order. That is to say, is we add elements 1 and 2 to a list, we can then ask for the "top" of the stack and get back the value 2. We typically use the verbs "push" and "pop" to respectively describe the act of pushing onto the stack and popping something off the stack. Python even has a method on list called `pop`, although `push` does not exist since it is already available as `append`.
+
+Let's demonstrate this in an interactive session:
+
+```python
+>>> stack = []
+>>> stack.append(1)
+>>> stack
+[1]
+>>> stack.append(2)
+>>> stack
+[1, 2]
+>>> stack.pop()
+2
+>>> stack
+[1]
+>>> stack.pop()
+1
+>>> stack
+[]
+>>> stack.pop()
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+IndexError: pop from empty list
+```
+
+In Python, the "top" of the stack is the end of the list. When we call `pop`, we get the last element and that element is removed from the list.
+
+So, let's say that our state consists simply of a number for now. We'll say that when we increment our position with `F`, we're adding one to our position. When we see a `[`, we want to remember our state. When we encounter a `]`, we'll pop our state.
+
+Starting at a state of 0, can you predict the sequence of states if we process the following program?
+
+```
+    F[F[F]F]F
+```
+
+Try the following simple program. It will print the character being interpreted and the current state.
+
+```python
+def interpret(prog):
+    state = 0
+    stack = []
+    for c in prog:
+        if c == 'F':
+            state += 1
+        elif c == '[':
+            print 'SAVED STATE:', state
+            stack.append(state)
+        elif c == ']':
+            state = stack.pop()
+            print 'RESTORED STATE:', state
+        else:
+            print 'could not understand:', c
+        print 'saw:', c, 'state:', state,
+
+def main():
+    interpret('F[F[F]F]F')
+
+if __name__ == '__main__': main()
+```
+
+Running it produces the following output.
+
+```
+saw: F state: 1 stack: []
+SAVED STATE: 1
+saw: [ state: 1 stack: [1]
+saw: F state: 2 stack: [1]
+SAVED STATE: 2
+saw: [ state: 2 stack: [1, 2]
+saw: F state: 3 stack: [1, 2]
+RESTORED STATE: 2
+saw: ] state: 2 stack: [1]
+saw: F state: 3 stack: [1]
+RESTORED STATE: 1
+saw: ] state: 1 stack: []
+saw: F state: 2 stack: []
+```
+
+Play with this, perhaps adding a few more `print` statements, until you understand how this works.
+
+With that understood, the work to add a stack to our turtle is just a few lines of code. In the `__init__` method of `TurtleState` in `state.py`, add tne line:
+
+```python
+        self.stack = []
+```
+
+Then, add the following two methods.
+
+```python
+    def push(self):
+        self.stack.append((self.position, self.angle))
+
+    def pop(self):
+        (self.position, self.angle) = self.stack.pop()
+```
+
+The only thing remaining is to add support for brackets to `LSys` and add an L-system which uses them.
+
+In `lsys.py`, add the following checks to the series of `if`/`elif` statements in the `run` method:
+
+```python
+            elif cmd == '[':
+                self.turtle.state.push()
+            elif cmd == ']':
+                self.turtle.state.pop()
+```
+
+To make our `LSys` flexible to support more types of L-systems, let's make the angle of turning parametrizable. Add the following L-system to `examples.py`.
+
+```python
+class Plant:
+    axiom = 'X'
+    rules = {
+        'X': 'F-[[X]+X]+F[+FX]-X',
+        'F': 'FF'
+    }
+    angle = 22.5
+```
+
+We've added this `angle` attribute, but we currently will ignore it. What we want is to check if a class has an attribute called "angle". Since Python is a dynamic language, we can do this directly using the built-in function `hasattr`.
+
+```python
+>>> from examples import *
+>>> hasattr
+<built-in function hasattr>
+>>> hasattr(KochIsland, 'angle')
+False
+>>> hasattr(Plant, 'angle')
+True
+```
+
+Let's use this in the `__init__` method of `LSys` in `lsys.py`, by setting the angle with a default value of 90˚, or the `angle` attribute if present:
+
+```python
+        self.angle = 90
+        if hasattr(lsys, 'angle'):
+            self.angle = lsys.angle
+```
+
+And in the `run` method, we modify our existing lines for handling `+` and `-` to use `self.angle` for our turns.
+
+```python
+            elif cmd == '+':
+                self.turtle.left(self.angle)
+            elif cmd == '-':
+                self.turtle.right(self.angle)
+```
+
+Finally, replace the contents of `test.py` with the following, which correctly sets the window size, step size, initial coordinates and initial angle.
+
+```python
+from graphics import GraphWin
+from draw import TurtleDraw
+from lsys import LSys
+
+from examples import *
+
+
+def draw_lsys(win):
+    t = TurtleDraw(win)
+    t.state.position = (150, 255)
+    t.state.left()
+    t.set_color(40, 180, 30)
+    lsys = LSys(t, Plant)
+    lsys.rewrite(4)
+    lsys.step_size = 5
+    print 'Program:', lsys.prog
+    lsys.run()
+
+def main():
+    win = GraphWin('', 300, 300)
+    draw_lsys(win)
+    win.getMouse()
+    win.close()
+
+if __name__ == '__main__': main()
+```
+
+If everything was implemented correctly, you should see the following image generated.
+
+![A branching L-system](images/branching.png)
