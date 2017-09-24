@@ -617,7 +617,7 @@ We want to use a feature of format strings to provide a "format specification" f
 '7f'
 ```
 
-There's our hexadecimal number! The format specifier is `x`, which means we wanted our argument to be represented in hexadecimal. The `:` indicates the beginning of a format specified.
+There's our hexadecimal number! The format specifier is `x`, which means we wanted our argument to be represented in hexadecimal. The `:` indicates the beginning of a format specifier.
 
 It would appear the format string for the RGB color will look like `#{:x}{:x}{:x}`. Let's try it with aquamarine.
 
@@ -2620,8 +2620,8 @@ From here, there are a lot of things that can be done. That will form the basis 
 * Add a method called `pencolor` which changes the current color. It should remember the color until the next time you use `pencolor` to apply a new color.
 * Add methods `penup` and `pendown` which respectively disable and re-enable drawing when moving `forward` or `backward`.
 * Add a `pensize` method which sets the line width to use when drawing lines. (Hint: if `line` is a `Line` instance, you can set `line.setWidth(new_width)` before calling `line.draw(win)`.)
-* Refactor all the drawing state (pen size, pen up/down, pen color) into a separate class called `DrawState` (similar to `TurtleState`).
-* Add a `__repr__` method to `DrawState`. Add a `__repr__` method to `TurtleDraw` which relies on `TurtleState` and `DrawState`.
+* Refactor all the drawing state (pen size, pen up/down, pen color) into a separate class called `PenState` (similar to `TurtleState`).
+* Add a `__repr__` method to `PenState`. Add a `__repr__` method to `TurtleDraw` which relies on `TurtleState` and `PenState`.
 * Our turtle is missing a visual turtle on screen. A simple way to do this would be to draw an isoceles triangle pointing at the current heading and use the `move` method to translate it as the turtle moves.
 * Try creating two turtles at the same time and make them both draw simultaneously.
 

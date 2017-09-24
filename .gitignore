@@ -3,3 +3,4 @@ work/*
 figures/*.aux
 figures/*.log
 figures/*.pdf
+*.pyc
