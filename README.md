@@ -8,11 +8,12 @@ __<a href="turtle.md">Read it here.</a>__
 
 &nbsp;
 
-&nbsp;
-
 __<a href="examples/">Look at code examples.</a>__
 
 &nbsp;
+
+&nbsp;
+
 Please message me or send a pull request if you notice any errors. Thanks!
 
 &nbsp;
