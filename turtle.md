@@ -3267,9 +3267,7 @@ saw: ] state: 1 stack: []
 saw: F state: 2 stack: []
 ```
 
-Play with this, perhaps adding a few more `print` statements, until you understand how this works.
-
-With that understood, the work to add a stack to our turtle is just a few lines of code. In the `__init__` method of `TurtleState` in `state.py`, add tne line:
+Play with this, perhaps adding a few more `print` statements, until you understand how this works.  With that clear, the work to add a stack to our turtle is just a few lines of code. In the `__init__` method of `TurtleState` in `state.py`, add the line:
 
 ```python
         self.stack = []
@@ -3285,9 +3283,9 @@ Then, add the following two methods.
         (self.position, self.angle) = self.stack.pop()
 ```
 
-The only thing remaining is to add support for brackets to `LSys` and add an L-system which uses them.
+This is identical to how we saved the state in our `stack.py` example with the exception that we need to save both our position and angle with each stack operation.
 
-In `lsys.py`, add the following checks to the series of `if`/`elif` statements in the `run` method:
+Now we need to add support for brackets to `LSys` and add an L-system which uses them. In `lsys.py`, add the following checks to the series of `if`/`elif` statements in the `run` method:
 
 ```python
             elif cmd == '[':
@@ -3366,6 +3364,8 @@ def main():
 
 if __name__ == '__main__': main()
 ```
+
+That was a lot of changes to a lot of files. It is quite common when changing interfaces between classes and adding functionality that a significant amount of this type of plumbing work has to be done. If you had any difficulty, compare your code to the [examples](examples/).
 
 If everything was implemented correctly, you should see the following image generated.
 
