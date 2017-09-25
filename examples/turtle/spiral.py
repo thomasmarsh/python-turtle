@@ -5,9 +5,12 @@ def spiral(t):
     step = 4
     laenge = step
     t.color(0, 255, 0)
-    t.pensize(3)
+    size = 6
     t.left(180)
     for i in range(-2, 80):
+        t.pensize(size)
+        size -= 0.05
+        size = max(1, size)
         if i > 0:
             t.color((255-15*i)%256, 0, (15*i)%256)
         for _ in range(3):
