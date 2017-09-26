@@ -1,3 +1,11 @@
+class Demo:
+    axiom = 'F'
+    rules = {
+        'F': 'FF[f]-',
+        'f': '+F'
+    }
+    angle = 20
+
 class Fibonacci:
     axiom = 'A'
     rules = {
@@ -43,3 +51,29 @@ class Penrose:
         'A': ''
     }
     angle = 36
+
+class Arrowhead:
+    axiom = 'A'
+    rules = {
+        'A': 'B-A-B',
+        'B': 'A+B+A'
+    }
+    angle = 60
+
+class DragonCurve:
+    axiom = 'FX'
+    rules = {
+        'X': 'X+YF+',
+        'Y': '-FX-Y'
+    }
+
+class Triangle:
+    axiom = 'W'
+    rules = {
+        'W': '+++X--F--ZFX+',
+        'X': '---W++F++YFW-',
+        'Y': '+ZFX--F--Z+++',
+        'Z': '-YFW++F++Y---',
+    }
+    angle = 30
+    n = 6
