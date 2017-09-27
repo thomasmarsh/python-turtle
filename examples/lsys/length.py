@@ -15,6 +15,7 @@ Typical usage of this module is simply as follows:
 """
 
 from collections import deque
+import sys
 
 def variables(lsys):
     # By definition, the variables of the D0L grammar are those that
@@ -32,7 +33,7 @@ def constants(lsys):
     return (a | b) - variables(lsys)
 
 def alphabet(lsys):
-    # The alphabet is returned as a list rather than a set because
+    # The alphabet is returned as a string rather than a set because
     # the ordering is useful in certain contexts.
     return ''.join(sorted(variables(lsys)) + sorted(constants(lsys)))
 
@@ -98,14 +99,15 @@ def length(lsys, n):
                        cache,
                        lut)
 
-def length_impl(axiom,   # The current axiom
-                rules,   # Production rules
-                n,       # Number of iterations remaining
-                cache,   # Cache of results mapping (axiom, n) -> length
-                lut):    # Map of axiom -> (histogram, constant count, symbols)
+def length_impl(axiom,  # The current axiom
+                rules,  # Production rules
+                n,      # Number of iterations remaining
+                cache,  # Cache of results mapping (axiom, n) -> length
+                lut):   # Map of axiom -> (histogram, constant count, symbols)
 
     # We use the current axiom and the depth as the key into a cache.
-    q = deque([(axiom, n)])
+    k = (axiom, n)
+    q = deque([k])
 
     result = 0
     while q:
@@ -114,10 +116,8 @@ def length_impl(axiom,   # The current axiom
 
         if k in cache:
             # If we have a result, pop it off. The last entry on the stack
-            # is the final result
+            # will be the top level key, so cache[k] will hold the result.
             q.pop()
-            if not q:
-                result = cache[k]
         else:
             (axiom, n) = k
 
@@ -126,8 +126,13 @@ def length_impl(axiom,   # The current axiom
 
             (h, nc, s) = lut[axiom]
 
+            # Good if all children are cached
             good = True
+
+            # Accumulator for the variables
             nv = 0
+
+            # For variable character in this axiom
             for x in s:
                 kp = (rules[x], n-1)
                 if not kp in cache:
@@ -136,10 +141,12 @@ def length_impl(axiom,   # The current axiom
                 elif good:
                     nv += h[x] * cache[kp]
 
+            # Compute final value for this cache entry as sum
+            # of contribution from constants and variables.
             if good:
                 cache[k] = nc + nv
 
-    return result
+    return cache[k]
 
 
 # The following methods require numpy
@@ -172,7 +179,7 @@ try:
         A = growth_matrix(lsys)
         return np.sum(pi * (A ** n))
 
-except ImportError, error:
+except ImportError as error:
     def matrix_length(lsys, n):
         raise error
 
@@ -181,7 +188,6 @@ except ImportError, error:
 #
 
 def print_info(lsys):
-    import sys
     write = sys.stderr.write
     write('V = ' + repr(alphabet(lsys)) + '\n')
     write('ω = ' + repr(lsys.axiom) + '\n')
@@ -197,10 +203,13 @@ def print_info(lsys):
 def print_dot(lsys):
     print_info(lsys)
 
-    print 'digraph G {'
+    def out(msg):
+        sys.stdout.write(msg + '\n')
+
+    out('digraph G {')
     indent = ' '*4
-    print indent + 'bgcolor=transparent;'
-    print indent + 'node[shape=square];'
+    out(indent + 'bgcolor=transparent;')
+    out(indent + 'node[shape=square];')
 
     # Build a map from each character to a symbol name
     sym = {s: 'v{}'.format(k)
@@ -212,7 +221,7 @@ def print_dot(lsys):
             attrs = [('label', '"{}"'.format(v)),
                     ('shape', 'square')] + extras
             fmt_attrs = map(lambda x: '='.join(x), attrs)
-            print indent + '{}[{}];'.format(sym[v], ','.join(fmt_attrs))
+            out(indent + '{}[{}];'.format(sym[v], ','.join(fmt_attrs)))
 
     print_nodes(variables(lsys))
     print_nodes(constants(lsys), [('style', 'filled'),
@@ -223,8 +232,8 @@ def print_dot(lsys):
             n = lsys.rules[vi].count(vj)
             if n > 0:
                 label = ' [label=" {}"]'.format(n)
-                print indent + '{} -> {}{};'.format(sym[vi], sym[vj], label)
-    print '}'
+                out(indent + '{} -> {}{};'.format(sym[vi], sym[vj], label))
+    out('}')
 
 
 #
@@ -236,7 +245,7 @@ def random_lsys(n=1000):
     import string
 
     def choose_repeat(xs, n):
-        return ''.join([random.choice(xs) for _ in range(n)])
+        return ''.join([random.choice(xs) for _ in xrange(n)])
 
     letters = string.ascii_lowercase + string.ascii_uppercase
     ab = letters if n >= len(letters) else ''.join(random.sample(letters, n))
@@ -255,26 +264,42 @@ def random_lsys(n=1000):
 def do_test():
     from examples import Plant
     lsys = Plant #random_lsys(5)
-    print lsys.axiom
-    for x in lsys.rules.items():
-        print x
+    print_info(lsys)
 
-    for n in range(0, 100):
+    for n in xrange(0, 100):
         m = matrix_length(lsys, n)
         r = length(lsys, n)
-        print n, m, r
+        sys.stdout.write(' '.join(map(repr, [n, m, r])))
         assert(m == r)
+
+def verify():
+    sys.stdout.write('Verifying...\n')
+    sys.stdout.flush()
+    from examples import Demo, Fibonacci, KochIsland, QuadraticSnowflake, \
+                         IslandsAndLakes, Plant, Penrose, Arrowhead, \
+                         DragonCurve, Triangle, Stress
+
+    for lsys in [Demo, Fibonacci, KochIsland, QuadraticSnowflake,
+                 IslandsAndLakes, Plant, Penrose, Arrowhead,
+                 DragonCurve, Triangle, Stress] \
+                + [random_lsys(20) for i in xrange(20)]:
+        for n in xrange(0,20):
+            m = matrix_length(lsys, n)
+            r = length(lsys, n)
+            assert(m == r)
 
 def benchmark():
     import timeit
     import sys
     from examples import Stress
 
+    verify()
+
     global lsys
-    lsys = Stress # andom_lsys(100)
+    lsys = Stress
 
     setup = 'from __main__ import lsys, matrix_length, length'
-    prog = '[{}(lsys, n) for n in range(20)]'
+    prog = '[{}(lsys, n) for n in xrange(20)]'
     for fn, label in [('length', 'Memo (stack)'),
                       ('matrix_length', 'Matrix')]:
         sys.stdout.write('{} method: '.format(label))
