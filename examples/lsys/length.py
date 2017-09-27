@@ -14,6 +14,8 @@ Typical usage of this module is simply as follows:
     print length(Penrose, 100)
 """
 
+from collections import deque
+
 def variables(lsys):
     # By definition, the variables of the D0L grammar are those that
     # can be replaced by substitution. Those are the left-hand-side
@@ -34,8 +36,8 @@ def alphabet(lsys):
     # the ordering is useful in certain contexts.
     return ''.join(sorted(variables(lsys)) + sorted(constants(lsys)))
 
-def build_lut(lsys):
-    # The LookUp-Table, or "lut" is a map of a string of symbols to
+def build_lut(lsys, ss):
+    # The lookup-table (or "lut") is a map of a string of symbols to
     # a tuple in the form (h, c, s), where h is a histogram, c is a
     # count of all the constants, and s is the set of unique symbols
     # in the the axiom.
@@ -56,7 +58,6 @@ def build_lut(lsys):
     # The set of variables in the system
     vs = variables(lsys)
 
-    ss = [lsys.axiom] + lsys.rules.values()
     lut = {}
     for s in ss:
         # Unique symbols in this axiom
@@ -68,7 +69,8 @@ def build_lut(lsys):
         # Count all the constants in this axiom
         nc = sum([h[x] for x in (sa & cs)])
 
-        # Build the lut entry
+        # Build the lut entry. The last element is the set of variables in
+        # this axiom.
         lut[s] = (h, nc, sa & vs)
 
     return lut
@@ -79,15 +81,21 @@ def length(lsys, n):
     of application of the production rules.
     """
 
+    # All the symbol lists in the system
+    ss = [lsys.axiom] + lsys.rules.values()
+
     # Build the LUT
-    lut = build_lut(lsys)
+    lut = build_lut(lsys, ss)
+
+    # Build the cache, prepulated with n==0 entries
+    cache = { (k, 0): len(k) for k in ss }
 
     # Invoke the recursive implementation which memoizes results
     # into a cache.
     return length_impl(lsys.axiom,
                        lsys.rules,
                        n,
-                       {},
+                       cache,
                        lut)
 
 def length_impl(axiom,   # The current axiom
@@ -96,34 +104,42 @@ def length_impl(axiom,   # The current axiom
                 cache,   # Cache of results mapping (axiom, n) -> length
                 lut):    # Map of axiom -> (histogram, constant count, symbols)
 
-    # Base case at then bottom of the recursion, we just return the length
-    # of the axiom.
-    if n <= 0:
-        return len(axiom)
-
     # We use the current axiom and the depth as the key into a cache.
-    k = (axiom, n)
+    q = deque([(axiom, n)])
 
-    # If we have not seen this key, then we need to compute its value.
-    if not k in cache:
-        # Unique symbols in axiom
-        sa = set(axiom)
+    result = 0
+    while q:
+        # Peek at the top of the stack
+        k = q[-1]
 
-        # Histogram, constant count, and unique symbols for this axiom
-        (h, nc, s) = lut[axiom]
+        if k in cache:
+            # If we have a result, pop it off. The last entry on the stack
+            # is the final result
+            q.pop()
+            if not q:
+                result = cache[k]
+        else:
+            (axiom, n) = k
 
-        # Count all the variables in this axiom and recurse. Note that
-        # we only recurse once for each symbol, so we multiply the result
-        # by the count provided in the histogram.
-        b = sum([h[x] * length_impl(rules[x],
-                                    rules,
-                                    n-1,
-                                    cache,
-                                    lut) for x in s])
+            # Base case should be pre-populated.
+            #assert(n > 0)
 
-        cache[k] = nc + b
+            (h, nc, s) = lut[axiom]
 
-    return cache[k]
+            good = True
+            nv = 0
+            for x in s:
+                kp = (rules[x], n-1)
+                if not kp in cache:
+                    good = False
+                    q.append(kp)
+                elif good:
+                    nv += h[x] * cache[kp]
+
+            if good:
+                cache[k] = nc + nv
+
+    return result
 
 
 # The following methods require numpy
@@ -149,7 +165,7 @@ try:
         Calculates the length of the generated string after `n` iterations
         of application of the production rules.
         """
-        # This is the formal method for determining the length of a generated
+        # This is the canonical method for determining the length of a generated
         # string from an L-system after `n` iterations. Despite being very
         # space-efficient, it is slower than the memoized approach above.
         pi = start_array(lsys)
@@ -222,7 +238,8 @@ def random_lsys(n=1000):
     def choose_repeat(xs, n):
         return ''.join([random.choice(xs) for _ in range(n)])
 
-    ab = string.ascii_lowercase + string.ascii_uppercase
+    letters = string.ascii_lowercase + string.ascii_uppercase
+    ab = letters if n >= len(letters) else ''.join(random.sample(letters, n))
     cs = '+-[]'
 
     class Dummy: pass
@@ -236,26 +253,30 @@ def random_lsys(n=1000):
     return lsys
 
 def do_test():
-    lsys = random_lsys(10)
+    from examples import Plant
+    lsys = Plant #random_lsys(5)
     print lsys.axiom
     for x in lsys.rules.items():
         print x
-    for n in range(0, 20):
+
+    for n in range(0, 100):
         m = matrix_length(lsys, n)
         r = length(lsys, n)
-        assert(m == r)
         print n, m, r
+        assert(m == r)
 
 def benchmark():
     import timeit
     import sys
+    from examples import Stress
 
     global lsys
-    lsys = random_lsys(100)
+    lsys = Stress # andom_lsys(100)
 
     setup = 'from __main__ import lsys, matrix_length, length'
     prog = '[{}(lsys, n) for n in range(20)]'
-    for fn, label in [('length', 'Memo'), ('matrix_length', 'Matrix')]:
+    for fn, label in [('length', 'Memo (stack)'),
+                      ('matrix_length', 'Matrix')]:
         sys.stdout.write('{} method: '.format(label))
         sys.stdout.flush()
         t = timeit.timeit(prog.format(fn), number=100, setup=setup)
